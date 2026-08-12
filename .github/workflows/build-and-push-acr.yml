@@ -1,0 +1,112 @@
+name: Build and push Kubespray offline bundle
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Immutable ACR tag, for example bundle-v2.31.0-r1
+        required: true
+        type: string
+  push:
+    tags:
+      - bundle-v2.31.0-r*
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kubespray-offline-bundle-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      ACR_IMAGE: ${{ vars.ACR_IMAGE }}
+      RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
+    steps:
+      - name: Check out builder repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Validate release contract
+        shell: bash
+        env:
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+        run: |
+          set -euo pipefail
+          [[ "${RELEASE_TAG}" =~ ^bundle-v2\.31\.0-r[1-9][0-9]*$ ]]
+          python3 scripts/validate-acr-repository.py "${ACR_IMAGE}"
+          test -n "${ACR_USERNAME}"
+          test -n "${ACR_PASSWORD}"
+
+      - name: Install bundle build dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y apt-utils podman python3-venv zstd
+          docker buildx version
+
+      - name: Build and verify bundle
+        shell: bash
+        run: ./scripts/build-bundle.sh
+
+      - name: Assert the bundle did not grow beyond the pilot transport budget
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(stat -c %s dist/kubespray-offline-base.tar.zst)" -le 107374182400
+
+      - name: Build artifact image
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp Dockerfile dist/Dockerfile
+          docker buildx build \
+            --platform linux/amd64 \
+            --provenance=false \
+            --sbom=false \
+            --load \
+            --tag "${ACR_IMAGE}:${RELEASE_TAG}" \
+            --file dist/Dockerfile \
+            dist
+
+      - name: Log in and push to ACR
+        shell: bash
+        env:
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+        run: |
+          set -euo pipefail
+          registry=${ACR_IMAGE%%/*}
+          printf '%s' "${ACR_PASSWORD}" \
+            | docker login "${registry}" --username "${ACR_USERNAME}" --password-stdin
+          docker push "${ACR_IMAGE}:${RELEASE_TAG}"
+          docker logout "${registry}"
+
+      - name: Record pushed manifest digest
+        id: digest
+        shell: bash
+        run: |
+          set -euo pipefail
+          metadata=$(docker buildx imagetools inspect "${ACR_IMAGE}:${RELEASE_TAG}")
+          digest=$(sed -n 's/^[[:space:]]*Digest:[[:space:]]*//p' <<< "${metadata}")
+          [[ "${digest}" =~ ^sha256:[0-9a-f]{64}$ ]]
+          test "$(grep -c '^[[:space:]]*Digest:' <<< "${metadata}")" -eq 1
+          immutable_ref="${ACR_IMAGE}@${digest}"
+          printf 'image=%s\n' "${immutable_ref}" >> "${GITHUB_OUTPUT}"
+          printf '### Immutable bundle image\n\n`%s`\n' "${immutable_ref}" \
+            >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Upload build metadata
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: kubespray-offline-bundle-metadata-${{ env.RELEASE_TAG }}
+          path: |
+            dist/SHA256SUMS
+            dist/provenance.json
+            dist/source-images.lock
+          if-no-files-found: error
+          retention-days: 30

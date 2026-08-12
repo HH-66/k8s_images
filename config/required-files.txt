@@ -1,0 +1,10 @@
+files/kubernetes/v1.35.4/kubeadm
+files/kubernetes/v1.35.4/kubectl
+files/kubernetes/v1.35.4/kubelet
+files/kubernetes/etcd/etcd-v3.6.10-linux-amd64.tar.gz
+files/kubernetes/cri-tools/crictl-v1.35.0-linux-amd64.tar.gz
+files/kubernetes/cni/cni-plugins-linux-amd64-v1.9.1.tgz
+files/cilium-cli/v0.18.9/cilium-linux-amd64.tar.gz
+files/runc/v1.4.2/runc.amd64
+files/nerdctl-2.2.2-linux-amd64.tar.gz
+files/containerd-2.2.3-linux-amd64.tar.gz
