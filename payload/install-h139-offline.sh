@@ -27,6 +27,9 @@ trap - EXIT
 rmdir "${staging}"
 
 cd "${install_root}"
+mkdir -p charts
+tar -xzf files/cilium-chart/cilium-1.19.3.tgz -C charts
+test -f charts/cilium/Chart.yaml
 ./setup-container.sh
 ./start-nginx.sh
 REGISTRY_DIR=/var/lib/jasper-k8s-registry ./start-registry.sh

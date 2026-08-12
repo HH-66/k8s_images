@@ -24,7 +24,15 @@ require_nonempty_file "${root}/images/additional-images.list"
 require_nonempty_file "${root}/debs/local/Packages.gz"
 require_nonempty_file "${root}/pypi/index.html"
 require_nonempty_file "${root}/files/kubespray-2.31.0.tar.gz"
+require_nonempty_file "${root}/files/cilium-chart/cilium-1.19.3.tgz"
 require_file "${root}/playbook/offline-repo.yml"
+
+chart_version=$(tar -xOzf "${root}/files/cilium-chart/cilium-1.19.3.tgz" \
+  cilium/Chart.yaml | sed -n 's/^version: //p')
+test "${chart_version}" = 1.19.3 || {
+  echo "unexpected Cilium chart version: ${chart_version}" >&2
+  exit 1
+}
 
 while IFS= read -r path; do
   [[ -z "${path}" || "${path}" == \#* ]] && continue

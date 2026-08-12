@@ -121,8 +121,21 @@ export SOURCE_DATE_EPOCH=0
   export VENV_DIR="${offline_source}/.venv"
   ./pypi-mirror.sh
   docker=/usr/bin/docker ./download-images.sh
+  docker image inspect \
+    "quay.io/cilium/operator-generic:v${CILIUM_VERSION}" >/dev/null
+  docker run --rm --platform linux/amd64 \
+    --entrypoint /usr/bin/cilium-operator-generic \
+    "quay.io/cilium/operator-generic:v${CILIUM_VERSION}" --help >/dev/null
   "${repo_root}/scripts/download-filtered-files.sh" \
     outputs/files/files.list outputs/files
+  cilium_chart="outputs/files/cilium-chart/cilium-${CILIUM_VERSION}.tgz"
+  mkdir -p "$(dirname "${cilium_chart}")"
+  curl --location --fail --show-error \
+    --retry 3 --retry-all-errors \
+    --output "${cilium_chart}" \
+    "https://helm.cilium.io/cilium-${CILIUM_VERSION}.tgz"
+  printf '%s  %s\n' "${CILIUM_CHART_SHA256}" "${cilium_chart}" \
+    | sha256sum --check --strict
   docker=/usr/bin/docker ./download-additional-containers.sh
   ./create-repo.sh
   ./copy-target-scripts.sh
@@ -191,6 +204,12 @@ document = {
         "containerd": values["CONTAINERD_VERSION"],
         "etcd": values["ETCD_VERSION"],
         "cilium": values["CILIUM_VERSION"],
+    },
+    "charts": {
+        "cilium": {
+            "version": values["CILIUM_VERSION"],
+            "sha256": values["CILIUM_CHART_SHA256"],
+        }
     },
 }
 Path(sys.argv[2]).write_text(

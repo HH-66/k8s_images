@@ -7,6 +7,9 @@ owner；operator host 和 h139 都不运行下载流程，CI 也不会 SSH 或�
 Kubernetes 1.35.4、containerd 2.2.3、etcd 3.6.10 和 Cilium 1.19.3。NFD、GPU
 Operator、Kueue、KubeRay、监控、CSI 与业务镜像不属于该 bundle。
 
+bundle 同时携带固定 SHA-256 的 Cilium 1.19.3 Helm chart，并使用官方
+`quay.io/cilium/operator-generic` 镜像；消费端通过本地 chart directory 安装，不访问 Helm repository。
+
 ## GitHub 与 ACR 配置
 
 bundle 固定发布到：

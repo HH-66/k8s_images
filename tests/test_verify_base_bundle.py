@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import subprocess
+import tarfile
 import tempfile
 import unittest
 from pathlib import Path
@@ -34,6 +35,19 @@ class VerifyBaseBundleTests(unittest.TestCase):
             text=True,
         )
 
+    def write_cilium_chart(self, version: str = "1.19.3") -> None:
+        source = self.bundle / "chart-source"
+        chart = source / "cilium"
+        chart.mkdir(parents=True)
+        (chart / "Chart.yaml").write_text(
+            f"apiVersion: v2\nname: cilium\nversion: {version}\n",
+            encoding="utf-8",
+        )
+        destination = self.bundle / "files/cilium-chart/cilium-1.19.3.tgz"
+        destination.parent.mkdir(parents=True)
+        with tarfile.open(destination, "w:gz") as archive:
+            archive.add(chart, arcname="cilium")
+
     def test_missing_pypi_index_reports_served_path(self) -> None:
         result = self.verify()
 
@@ -57,6 +71,23 @@ class VerifyBaseBundleTests(unittest.TestCase):
             f"{self.bundle}/files/kubespray-2.31.0.tar.gz",
             result.stderr,
         )
+
+    def test_wrong_cilium_chart_version_is_rejected(self) -> None:
+        index = self.bundle / "pypi/index.html"
+        index.parent.mkdir(parents=True)
+        index.write_text("<html></html>\n", encoding="utf-8")
+        kubespray = self.bundle / "files/kubespray-2.31.0.tar.gz"
+        kubespray.parent.mkdir(parents=True, exist_ok=True)
+        kubespray.write_text("placeholder\n", encoding="utf-8")
+        playbook = self.bundle / "playbook/offline-repo.yml"
+        playbook.parent.mkdir(parents=True)
+        playbook.write_text("---\n", encoding="utf-8")
+        self.write_cilium_chart("1.19.4")
+
+        result = self.verify()
+
+        self.assertEqual(1, result.returncode)
+        self.assertIn("unexpected Cilium chart version: 1.19.4", result.stderr)
 
 
 if __name__ == "__main__":

@@ -10,6 +10,7 @@ test -x "${nerdctl}"
 test -f "${root}/kubespray-2.31.0/cluster.yml"
 test -f "${root}/kubespray-2.31.0/offline-repo.yml"
 test -f "${root}/kubespray-2.31.0/.jasper-kubespray-source.json"
+test -f "${root}/charts/cilium/Chart.yaml"
 systemctl is-active --quiet containerd
 "${root}/verify-base-bundle.sh" "${root}"
 curl --fail --silent --show-error --head \
