@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     env:
-      ACR_IMAGE: ${{ vars.ACR_IMAGE }}
+      ACR_IMAGE: registry.cn-shenzhen.aliyuncs.com/liuhh/k8s-images
       RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
     steps:
       - name: Check out builder repository

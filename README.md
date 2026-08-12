@@ -9,10 +9,14 @@ Operator、Kueue、KubeRay、监控、CSI 与业务镜像不属于该 bundle。
 
 ## GitHub 与 ACR 配置
 
-GitHub 仓库需要设置：
+bundle 固定发布到：
 
-- Repository variable `ACR_IMAGE`：不带 tag 的完整路径，例如
-  `registry-vpc.cn-region.aliyuncs.com/jasper/kubespray-offline-base`。
+```text
+registry.cn-shenzhen.aliyuncs.com/liuhh/k8s-images
+```
+
+GitHub 仓库只需要设置：
+
 - Repository secrets `ACR_USERNAME`、`ACR_PASSWORD`：只允许 push 该 ACR repository 的专用
   构建账号。
 - 建议用 GitHub tag protection/ruleset 保护 `bundle-v2.31.0-r*`，只允许发布管理员创建。
@@ -21,11 +25,12 @@ workflow 可由 `bundle-v2.31.0-r1` 形式的 Git tag 或 `workflow_dispatch` �
 `latest`，结束时会在 job summary 输出唯一可交付引用：
 
 ```text
-registry/repository@sha256:<digest>
+registry.cn-shenzhen.aliyuncs.com/liuhh/k8s-images@sha256:<digest>
 ```
 
 ACR repository 应启用 tag immutability、漏洞扫描和保留策略；h139 的 pull 账号应与 CI push
-账号分离，且只授予 pull 权限。
+账号分离，且只授予 pull 权限。若 ACR 配置了公网访问白名单，还需允许 GitHub 托管 runner 的动态出口；
+无法接受动态出口时应改用具备固定出口的专用 runner。
 
 ## 本地验证
 

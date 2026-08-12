@@ -59,6 +59,11 @@ class RepositoryContractTests(unittest.TestCase):
         self.assertIn("docker login", content)
         self.assertIn("--password-stdin", content)
         self.assertIn("@${digest}", content)
+        self.assertIn(
+            "ACR_IMAGE: registry.cn-shenzhen.aliyuncs.com/liuhh/k8s-images",
+            content,
+        )
+        self.assertNotIn("${{ vars.", content)
         self.assertIn("Digest:[[:space:]]*", content)
         self.assertNotIn("--raw | sha256sum", content)
 
