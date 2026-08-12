@@ -61,10 +61,20 @@ class FilterGeneratedListsTests(unittest.TestCase):
         )
 
     def test_ambiguous_file_pattern_fails_closed(self) -> None:
-        with self.assertRaisesRegex(MODULE.ListError, "exactly one"):
+        with self.assertRaisesRegex(MODULE.ListError, "matched 2 URLs"):
             MODULE.filter_files(
                 ["https://example.invalid/a", "https://example.invalid/b"],
                 [r"^https://example\.invalid/[ab]$"],
+            )
+
+    def test_overlapping_file_patterns_fail_closed(self) -> None:
+        with self.assertRaisesRegex(MODULE.ListError, "pattern selections"):
+            MODULE.filter_files(
+                ["https://example.invalid/a"],
+                [
+                    r"^https://example\.invalid/a$",
+                    r"^https://example\.invalid/[a]$",
+                ],
             )
 
 

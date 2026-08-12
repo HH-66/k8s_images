@@ -49,27 +49,18 @@ def filter_images(generated: list[str], required: list[str]) -> list[str]:
 def filter_files(generated: list[str], patterns: list[str]) -> list[str]:
     require_unique(generated, "generated file list")
     require_unique(patterns, "file allow pattern list")
-    compiled = [re.compile(pattern) for pattern in patterns]
-    selected = sorted(
-        value
-        for value in generated
-        if any(pattern.fullmatch(value) for pattern in compiled)
-    )
-    unmatched = [
-        patterns[index]
-        for index, pattern in enumerate(compiled)
-        if not any(pattern.fullmatch(value) for value in generated)
-    ]
-    if unmatched:
-        raise ListError(
-            f"generated file list did not match allow patterns: {unmatched}"
-        )
-    if len(selected) != len(patterns):
-        raise ListError(
-            "file allow patterns must each select exactly one generated URL; "
-            f"selected {len(selected)} URLs for {len(patterns)} patterns"
-        )
-    return selected
+    selected: list[str] = []
+    for pattern_text in patterns:
+        pattern = re.compile(pattern_text)
+        matches = sorted(value for value in generated if pattern.fullmatch(value))
+        if len(matches) != 1:
+            raise ListError(
+                "file allow patterns must each match exactly one generated URL; "
+                f"pattern {pattern_text!r} matched {len(matches)} URLs: {matches}"
+            )
+        selected.append(matches[0])
+    require_unique(selected, "file allow pattern selections")
+    return sorted(selected)
 
 
 def write_lines(path: Path, values: list[str]) -> None:

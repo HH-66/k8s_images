@@ -51,6 +51,10 @@ class RepositoryContractTests(unittest.TestCase):
         self.assertEqual(
             lines("config/required-files.txt"), lines("payload/required-files.txt")
         )
+        self.assertEqual(
+            len(lines("config/allow-kubespray-file-patterns.txt")),
+            len(lines("config/required-files.txt")),
+        )
 
     def test_workflow_has_no_h139_deployment_and_no_latest_tag(self) -> None:
         content = (ROOT / ".github/workflows/build-and-push-acr.yml").read_text()
