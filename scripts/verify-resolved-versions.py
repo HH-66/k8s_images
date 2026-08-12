@@ -36,6 +36,7 @@ def verify(version_file: Path, image_file: Path, url_file: Path) -> None:
     expected_images = {
         f"quay.io/cilium/cilium:v{version['CILIUM_VERSION']}": "Cilium",
         f"quay.io/cilium/operator-generic:v{version['CILIUM_VERSION']}": "Cilium operator",
+        f"quay.io/coreos/etcd:v{version['ETCD_VERSION']}": "etcd",
         f"registry.k8s.io/coredns/coredns:v{version['COREDNS_VERSION']}": "CoreDNS",
         f"registry.k8s.io/cpa/cluster-proportional-autoscaler:v{version['DNS_AUTOSCALER_VERSION']}": "DNS autoscaler",
         f"registry.k8s.io/dns/k8s-dns-node-cache:{version['NODELOCALDNS_VERSION']}": "NodeLocal DNS",

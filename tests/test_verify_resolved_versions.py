@@ -70,6 +70,29 @@ class VerifyResolvedVersionsTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "Cilium did not resolve"):
                 MODULE.verify(versions, images, files)
 
+    def test_missing_etcd_image_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            images = root / "images.list"
+            files = root / "files.list"
+            images.write_text(
+                "\n".join(
+                    line
+                    for line in (
+                        ROOT / "config/required-kubespray-images.txt"
+                    ).read_text(encoding="utf-8").splitlines()
+                    if line != "quay.io/coreos/etcd:v3.6.10"
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            files.write_text(
+                "".join(f"{url}\n" for url in self.reviewed_urls()),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(RuntimeError, "etcd did not resolve"):
+                MODULE.verify(ROOT / "config/required-versions.env", images, files)
+
 
 if __name__ == "__main__":
     unittest.main()

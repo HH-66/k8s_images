@@ -23,11 +23,14 @@ class RepositoryContractTests(unittest.TestCase):
         self.assertEqual("2.31.0", values["KUBESPRAY_VERSION"])
         self.assertRegex(values["KUBESPRAY_COMMIT"], r"^[0-9a-f]{40}$")
         self.assertEqual("1.35.4", values["KUBERNETES_VERSION"])
+        self.assertEqual("h139-base-cluster-r3", values["BUNDLE_PROFILE"])
 
     def test_base_cluster_has_no_addons(self) -> None:
         profile = (ROOT / "config/base-cluster.yml").read_text(encoding="utf-8")
         self.assertIn("kube_network_plugin: cilium\n", profile)
         self.assertIn("container_manager: containerd\n", profile)
+        self.assertIn("etcd_deployment_type: kubeadm\n", profile)
+        self.assertNotIn("etcd_deployment_type: host\n", profile)
         self.assertIn(
             "cilium_operator_image_repo: quay.io/cilium/operator-generic\n",
             profile,
@@ -60,6 +63,7 @@ class RepositoryContractTests(unittest.TestCase):
             images,
         )
         self.assertNotIn("quay.io/cilium/operator:v1.19.3", images)
+        self.assertIn("quay.io/coreos/etcd:v3.6.10", images)
         self.assertIn(
             "files/cilium-chart/cilium-1.19.3.tgz",
             lines("config/required-files.txt"),

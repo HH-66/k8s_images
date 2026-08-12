@@ -2,6 +2,7 @@ docker.io/library/nginx:1.30.0
 docker.io/library/registry:3.1.0
 quay.io/cilium/cilium:v1.19.3
 quay.io/cilium/operator-generic:v1.19.3
+quay.io/coreos/etcd:v3.6.10
 registry.k8s.io/coredns/coredns:v1.12.4
 registry.k8s.io/cpa/cluster-proportional-autoscaler:v1.8.8
 registry.k8s.io/dns/k8s-dns-node-cache:1.25.0

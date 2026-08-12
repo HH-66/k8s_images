@@ -7,6 +7,11 @@ owner；operator host 和 h139 都不运行下载流程，CI 也不会 SSH 或�
 Kubernetes 1.35.4、containerd 2.2.3、etcd 3.6.10 和 Cilium 1.19.3。NFD、GPU
 Operator、Kueue、KubeRay、监控、CSI 与业务镜像不属于该 bundle。
 
+etcd 固定使用 Kubespray 的 `etcd_deployment_type: kubeadm`，因此 bundle 同时携带
+`quay.io/coreos/etcd:v3.6.10` 容器镜像和 etcd 二进制 tar：前者用于 stacked-etcd static Pod，后者供
+containerd 路径安装 `etcdctl`/`etcdutl`。该模式只支持干净新建集群，不能用于把已有 host-etcd 集群
+原地转换为 kubeadm etcd。
+
 bundle 同时携带固定 SHA-256 的 Cilium 1.19.3 Helm chart，并使用官方
 `quay.io/cilium/operator-generic` 镜像；消费端通过本地 chart directory 安装，不访问 Helm repository。
 

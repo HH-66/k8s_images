@@ -2,7 +2,7 @@
 kube_version: 1.35.4
 container_manager: containerd
 containerd_version: 2.2.3
-etcd_deployment_type: host
+etcd_deployment_type: kubeadm
 etcd_version: 3.6.10
 kube_network_plugin: cilium
 cilium_version: 1.19.3
