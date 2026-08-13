@@ -1,0 +1,32 @@
+hostname: 10.144.66.139
+
+networkExposure:
+  type: none
+
+ingress:
+  enabled: false
+  servicePort: 443
+  tls:
+    source: rancher
+
+service:
+  type: NodePort
+  disableHTTP: true
+
+replicas: 1
+priorityClassName: jasper-service-high
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: "2"
+    memory: 4Gi
+
+tls: ingress
+privateCA: false
+systemDefaultRegistry: 10.144.66.139:35000
+useBundledSystemChart: true
+postDelete:
+  enabled: false

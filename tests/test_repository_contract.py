@@ -118,6 +118,7 @@ class RepositoryContractTests(unittest.TestCase):
         self.assertIn("addon-scheduler-plugins-v0.35.4-devel-r*", content)
         self.assertIn("addon-kueue-v0.19.0-r*", content)
         self.assertIn("addon-kuberay-v1.6.2-r*", content)
+        self.assertIn("addon-rancher-v2.15.0-r*", content)
         self.assertIn("./addons/nfd/scripts/build-bundle.sh", content)
         self.assertIn("./addons/gpu-operator/scripts/build-bundle.sh", content)
         self.assertIn(
@@ -125,6 +126,7 @@ class RepositoryContractTests(unittest.TestCase):
         )
         self.assertIn("./addons/kueue/scripts/build-bundle.sh", content)
         self.assertIn("./addons/kuberay/scripts/build-bundle.sh", content)
+        self.assertIn("./addons/rancher/scripts/build-bundle.sh", content)
         self.assertIn("${GITHUB_WORKSPACE}/addons/nfd/Dockerfile", content)
         self.assertIn(
             "${GITHUB_WORKSPACE}/addons/gpu-operator/Dockerfile", content
@@ -134,6 +136,7 @@ class RepositoryContractTests(unittest.TestCase):
         )
         self.assertIn("${GITHUB_WORKSPACE}/addons/kueue/Dockerfile", content)
         self.assertIn("${GITHUB_WORKSPACE}/addons/kuberay/Dockerfile", content)
+        self.assertIn("${GITHUB_WORKSPACE}/addons/rancher/Dockerfile", content)
 
     def test_list_generation_reuses_prepared_ansible_venv(self) -> None:
         content = (ROOT / "scripts/build-bundle.sh").read_text()

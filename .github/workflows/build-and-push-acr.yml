@@ -16,6 +16,7 @@ on:
           - kueue
           - kuberay
           - prometheus
+          - rancher
       release_tag:
         description: Immutable ACR tag
         required: true
@@ -29,6 +30,7 @@ on:
       - addon-kueue-v0.19.0-r*
       - addon-kuberay-v1.6.2-r*
       - addon-prometheus-v88.2.0-r*
+      - addon-rancher-v2.15.0-r*
 
 permissions:
   contents: read
@@ -69,6 +71,8 @@ jobs:
             artifact=kuberay
           elif [[ "${RELEASE_TAG}" =~ ^addon-prometheus-v88\.2\.0-r[1-9][0-9]*$ ]]; then
             artifact=prometheus
+          elif [[ "${RELEASE_TAG}" =~ ^addon-rancher-v2\.15\.0-r[1-9][0-9]*$ ]]; then
+            artifact=rancher
           else
             echo "unsupported release tag: ${RELEASE_TAG}" >&2
             exit 2
@@ -87,7 +91,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y apt-utils podman python3-venv skopeo zstd
+          sudo apt-get install -y apt-utils podman python3-venv python3-yaml skopeo zstd
           docker buildx version
 
       - name: Build and verify bundle
@@ -104,6 +108,7 @@ jobs:
             kueue) ./addons/kueue/scripts/build-bundle.sh 2>&1 ;;
             kuberay) ./addons/kuberay/scripts/build-bundle.sh 2>&1 ;;
             prometheus) ./addons/prometheus/scripts/build-bundle.sh 2>&1 ;;
+            rancher) ./addons/rancher/scripts/build-bundle.sh 2>&1 ;;
           esac | tee "${build_log}"
           build_status=${PIPESTATUS[0]}
           set -e
@@ -124,6 +129,7 @@ jobs:
             kueue) archive=dist/kueue/jasper-k8s-kueue-offline.tar.zst ;;
             kuberay) archive=dist/kuberay/jasper-k8s-kuberay-offline.tar.zst ;;
             prometheus) archive=dist/prometheus/jasper-k8s-prometheus-offline.tar.zst ;;
+            rancher) archive=dist/rancher/jasper-k8s-rancher-offline.tar.zst ;;
           esac
           test "$(stat -c %s "${archive}")" -le 107374182400
 
@@ -159,6 +165,10 @@ jobs:
             prometheus)
               context=dist/prometheus
               dockerfile="${GITHUB_WORKSPACE}/addons/prometheus/Dockerfile"
+              ;;
+            rancher)
+              context=dist/rancher
+              dockerfile="${GITHUB_WORKSPACE}/addons/rancher/Dockerfile"
               ;;
           esac
           docker buildx build \
