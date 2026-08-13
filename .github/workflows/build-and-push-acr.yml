@@ -94,15 +94,23 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          build_log="${RUNNER_TEMP}/bundle-build.log"
+          set +e
           case "${artifact}" in
-            base) ./scripts/build-bundle.sh ;;
-            nfd) ./addons/nfd/scripts/build-bundle.sh ;;
-            gpu-operator) ./addons/gpu-operator/scripts/build-bundle.sh ;;
-            scheduler-plugins) ./addons/scheduler-plugins/scripts/build-bundle.sh ;;
-            kueue) ./addons/kueue/scripts/build-bundle.sh ;;
-            kuberay) ./addons/kuberay/scripts/build-bundle.sh ;;
-            prometheus) ./addons/prometheus/scripts/build-bundle.sh ;;
-          esac
+            base) ./scripts/build-bundle.sh 2>&1 ;;
+            nfd) ./addons/nfd/scripts/build-bundle.sh 2>&1 ;;
+            gpu-operator) ./addons/gpu-operator/scripts/build-bundle.sh 2>&1 ;;
+            scheduler-plugins) ./addons/scheduler-plugins/scripts/build-bundle.sh 2>&1 ;;
+            kueue) ./addons/kueue/scripts/build-bundle.sh 2>&1 ;;
+            kuberay) ./addons/kuberay/scripts/build-bundle.sh 2>&1 ;;
+            prometheus) ./addons/prometheus/scripts/build-bundle.sh 2>&1 ;;
+          esac | tee "${build_log}"
+          build_status=${PIPESTATUS[0]}
+          set -e
+          if test "${build_status}" -ne 0; then
+            python3 scripts/report-build-failure.py "${build_log}"
+            exit "${build_status}"
+          fi
 
       - name: Assert the bundle did not grow beyond the pilot transport budget
         shell: bash
