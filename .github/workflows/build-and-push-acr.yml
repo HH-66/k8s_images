@@ -11,6 +11,7 @@ on:
         options:
           - base
           - nfd
+          - gpu-operator
       release_tag:
         description: Immutable ACR tag
         required: true
@@ -19,6 +20,7 @@ on:
     tags:
       - bundle-v2.31.0-r*
       - addon-nfd-v0.19.0-r*
+      - addon-gpu-operator-v26.3.3-r*
 
 permissions:
   contents: read
@@ -49,6 +51,8 @@ jobs:
             artifact=base
           elif [[ "${RELEASE_TAG}" =~ ^addon-nfd-v0\.19\.0-r[1-9][0-9]*$ ]]; then
             artifact=nfd
+          elif [[ "${RELEASE_TAG}" =~ ^addon-gpu-operator-v26\.3\.3-r[1-9][0-9]*$ ]]; then
+            artifact=gpu-operator
           else
             echo "unsupported release tag: ${RELEASE_TAG}" >&2
             exit 2
@@ -74,34 +78,41 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if test "${artifact}" = base; then
-            ./scripts/build-bundle.sh
-          else
-            ./addons/nfd/scripts/build-bundle.sh
-          fi
+          case "${artifact}" in
+            base) ./scripts/build-bundle.sh ;;
+            nfd) ./addons/nfd/scripts/build-bundle.sh ;;
+            gpu-operator) ./addons/gpu-operator/scripts/build-bundle.sh ;;
+          esac
 
       - name: Assert the bundle did not grow beyond the pilot transport budget
         shell: bash
         run: |
           set -euo pipefail
-          if test "${artifact}" = base; then
-            archive=dist/kubespray-offline-base.tar.zst
-          else
-            archive=dist/nfd/jasper-k8s-nfd-offline.tar.zst
-          fi
+          case "${artifact}" in
+            base) archive=dist/kubespray-offline-base.tar.zst ;;
+            nfd) archive=dist/nfd/jasper-k8s-nfd-offline.tar.zst ;;
+            gpu-operator) archive=dist/gpu-operator/jasper-k8s-gpu-operator-offline.tar.zst ;;
+          esac
           test "$(stat -c %s "${archive}")" -le 107374182400
 
       - name: Build artifact image
         shell: bash
         run: |
           set -euo pipefail
-          if test "${artifact}" = base; then
-            context=dist
-            dockerfile="${GITHUB_WORKSPACE}/Dockerfile"
-          else
-            context=dist/nfd
-            dockerfile="${GITHUB_WORKSPACE}/addons/nfd/Dockerfile"
-          fi
+          case "${artifact}" in
+            base)
+              context=dist
+              dockerfile="${GITHUB_WORKSPACE}/Dockerfile"
+              ;;
+            nfd)
+              context=dist/nfd
+              dockerfile="${GITHUB_WORKSPACE}/addons/nfd/Dockerfile"
+              ;;
+            gpu-operator)
+              context=dist/gpu-operator
+              dockerfile="${GITHUB_WORKSPACE}/addons/gpu-operator/Dockerfile"
+              ;;
+          esac
           docker buildx build \
             --platform linux/amd64 \
             --provenance=false \

@@ -1,0 +1,150 @@
+nfd:
+  enabled: false
+  nodefeaturerules: false
+
+daemonsets:
+  priorityClassName: system-node-critical
+
+validator:
+  repository: 10.144.66.139:35000/nvidia
+  image: gpu-operator
+  version: v26.3.3@sha256:ca6cbd45e11779164aa89fa9d20517bce4717b9a772f168a3c492075aad0abfe
+  imagePullPolicy: IfNotPresent
+
+operator:
+  repository: 10.144.66.139:35000/nvidia
+  image: gpu-operator
+  version: v26.3.3@sha256:ca6cbd45e11779164aa89fa9d20517bce4717b9a772f168a3c492075aad0abfe
+  imagePullPolicy: IfNotPresent
+  priorityClassName: system-node-critical
+  cleanupCRD: false
+  upgradeCRD: false
+
+mig:
+  strategy: none
+
+driver:
+  enabled: false
+  repository: 10.144.66.139:35000/nvidia
+  image: gpu-operator
+  version: v26.3.3@sha256:ca6cbd45e11779164aa89fa9d20517bce4717b9a772f168a3c492075aad0abfe
+  manager:
+    repository: 10.144.66.139:35000/nvidia
+    image: gpu-operator
+    version: v26.3.3@sha256:ca6cbd45e11779164aa89fa9d20517bce4717b9a772f168a3c492075aad0abfe
+
+toolkit:
+  enabled: true
+  repository: 10.144.66.139:35000/nvidia/k8s
+  image: container-toolkit
+  version: v1.19.1@sha256:05308cb0f8ad06f82f70d6f64321b3c99ab4836bb28fe50bb5d0cd0e79e7afba
+  imagePullPolicy: IfNotPresent
+
+devicePlugin:
+  enabled: true
+  repository: 10.144.66.139:35000/nvidia
+  image: k8s-device-plugin
+  version: v0.19.3@sha256:d6c456ffe537914357240e6641a40dfb5540822f9d3bee52788da5ec0646c551
+  imagePullPolicy: IfNotPresent
+  config:
+    create: false
+    name: ""
+
+gfd:
+  enabled: true
+  repository: 10.144.66.139:35000/nvidia
+  image: k8s-device-plugin
+  version: v0.19.3@sha256:d6c456ffe537914357240e6641a40dfb5540822f9d3bee52788da5ec0646c551
+  imagePullPolicy: IfNotPresent
+
+dcgm:
+  enabled: false
+  repository: 10.144.66.139:35000/nvidia
+  image: gpu-operator
+  version: v26.3.3@sha256:ca6cbd45e11779164aa89fa9d20517bce4717b9a772f168a3c492075aad0abfe
+
+dcgmExporter:
+  enabled: true
+  repository: 10.144.66.139:35000/nvidia/k8s
+  image: dcgm-exporter
+  version: 4.5.3-4.8.2-distroless@sha256:e9030b4fca0c8f110032f3b151b030e7e9db56604b407cf79631e1a3218b35e0
+  imagePullPolicy: IfNotPresent
+  serviceMonitor:
+    enabled: false
+
+migManager:
+  enabled: false
+  repository: 10.144.66.139:35000/nvidia
+  image: gpu-operator
+  version: v26.3.3@sha256:ca6cbd45e11779164aa89fa9d20517bce4717b9a772f168a3c492075aad0abfe
+
+nodeStatusExporter:
+  enabled: false
+  repository: 10.144.66.139:35000/nvidia
+  image: gpu-operator
+  version: v26.3.3@sha256:ca6cbd45e11779164aa89fa9d20517bce4717b9a772f168a3c492075aad0abfe
+
+gds:
+  enabled: false
+  repository: 10.144.66.139:35000/nvidia
+  image: gpu-operator
+  version: v26.3.3@sha256:ca6cbd45e11779164aa89fa9d20517bce4717b9a772f168a3c492075aad0abfe
+
+gdrcopy:
+  enabled: false
+  repository: 10.144.66.139:35000/nvidia
+  image: gpu-operator
+  version: v26.3.3@sha256:ca6cbd45e11779164aa89fa9d20517bce4717b9a772f168a3c492075aad0abfe
+
+vgpuManager:
+  enabled: false
+  repository: 10.144.66.139:35000/nvidia
+  image: gpu-operator
+  version: v26.3.3@sha256:ca6cbd45e11779164aa89fa9d20517bce4717b9a772f168a3c492075aad0abfe
+  driverManager:
+    repository: 10.144.66.139:35000/nvidia
+    image: gpu-operator
+    version: v26.3.3@sha256:ca6cbd45e11779164aa89fa9d20517bce4717b9a772f168a3c492075aad0abfe
+
+vgpuDeviceManager:
+  enabled: false
+  repository: 10.144.66.139:35000/nvidia
+  image: gpu-operator
+  version: v26.3.3@sha256:ca6cbd45e11779164aa89fa9d20517bce4717b9a772f168a3c492075aad0abfe
+
+vfioManager:
+  enabled: false
+  repository: 10.144.66.139:35000/nvidia
+  image: gpu-operator
+  version: v26.3.3@sha256:ca6cbd45e11779164aa89fa9d20517bce4717b9a772f168a3c492075aad0abfe
+  driverManager:
+    repository: 10.144.66.139:35000/nvidia
+    image: gpu-operator
+    version: v26.3.3@sha256:ca6cbd45e11779164aa89fa9d20517bce4717b9a772f168a3c492075aad0abfe
+
+kataManager:
+  enabled: false
+  repository: 10.144.66.139:35000/nvidia
+  image: gpu-operator
+  version: v26.3.3@sha256:ca6cbd45e11779164aa89fa9d20517bce4717b9a772f168a3c492075aad0abfe
+
+sandboxWorkloads:
+  enabled: false
+
+sandboxDevicePlugin:
+  enabled: false
+  repository: 10.144.66.139:35000/nvidia
+  image: gpu-operator
+  version: v26.3.3@sha256:ca6cbd45e11779164aa89fa9d20517bce4717b9a772f168a3c492075aad0abfe
+
+kataSandboxDevicePlugin:
+  enabled: false
+  repository: 10.144.66.139:35000/nvidia
+  image: gpu-operator
+  version: v26.3.3@sha256:ca6cbd45e11779164aa89fa9d20517bce4717b9a772f168a3c492075aad0abfe
+
+ccManager:
+  enabled: false
+  repository: 10.144.66.139:35000/nvidia
+  image: gpu-operator
+  version: v26.3.3@sha256:ca6cbd45e11779164aa89fa9d20517bce4717b9a772f168a3c492075aad0abfe

@@ -1,0 +1,31 @@
+{
+  "default": [
+    {
+      "type": "reject"
+    }
+  ],
+  "transports": {
+    "docker": {
+      "nvcr.io/nvidia/gpu-operator": [
+        {
+          "type": "insecureAcceptAnything"
+        }
+      ],
+      "nvcr.io/nvidia/k8s/container-toolkit": [
+        {
+          "type": "insecureAcceptAnything"
+        }
+      ],
+      "nvcr.io/nvidia/k8s-device-plugin": [
+        {
+          "type": "insecureAcceptAnything"
+        }
+      ],
+      "nvcr.io/nvidia/k8s/dcgm-exporter": [
+        {
+          "type": "insecureAcceptAnything"
+        }
+      ]
+    }
+  }
+}
