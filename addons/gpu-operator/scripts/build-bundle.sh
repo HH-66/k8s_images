@@ -50,8 +50,8 @@ copy_image() {
   local source_image=$1
   local source_tag=$2
   local source_digest=$3
-  local archive_name=$4
-  local archive="${build_root}/outputs/images/${archive_name}"
+  local image_archive_name=$4
+  local archive="${build_root}/outputs/images/${image_archive_name}"
 
   skopeo copy \
     --policy "${addon_root}/containers-policy.json" \

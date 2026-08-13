@@ -122,6 +122,8 @@ class GPUOperatorAddonContractTests(unittest.TestCase):
         self.assertEqual(
             4, len(re.findall(r"^  copy_image \\\n", content, re.MULTILINE))
         )
+        self.assertNotIn("local archive_name=", content)
+        self.assertIn("local image_archive_name=", content)
         self.assertIn('--policy "${addon_root}/containers-policy.json"', content)
         self.assertIn("--preserve-digests", content)
         self.assertIn('"oci-archive:${archive}:${source_tag}" >&2', content)
