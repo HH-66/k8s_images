@@ -1,0 +1,15 @@
+image:
+  repository: 10.144.66.139:35000/nfd/node-feature-discovery
+  tag: v0.19.0@sha256:aa5be8691e4d5876d8a774063b37e1430c75e09468ba98d8bd07f6deec1f1756
+  pullPolicy: IfNotPresent
+master:
+  enable: true
+  replicaCount: 1
+worker:
+  enable: true
+topologyUpdater:
+  enable: true
+  createCRDs: true
+gc:
+  enable: true
+  replicaCount: 1

@@ -1,11 +1,12 @@
 # Kubespray offline ACR builder
 
-该仓库只负责构建 `base-cluster` 离线制品并推送到阿里云 ACR。GitHub Actions 是唯一联网构建
+该仓库负责构建彼此独立的 `base-cluster` 和 add-on 离线制品并推送到阿里云 ACR。GitHub Actions 是唯一联网构建
 owner；operator host 和 h139 都不运行下载流程，CI 也不会 SSH 或部署 h139。
 
 首版固定为 Ubuntu 24.04 / amd64、Kubespray Offline 2.31.0、Kubespray 2.31.0、
 Kubernetes 1.35.4、containerd 2.2.3、etcd 3.6.10 和 Cilium 1.19.3。NFD、GPU
-Operator、Kueue、KubeRay、监控、CSI 与业务镜像不属于该 bundle。
+Operator、Kueue、KubeRay、监控、CSI 与业务镜像不属于 base bundle。首个独立 add-on artifact 是
+NFD 0.19.0，只携带正式 release chart、linux/amd64 镜像、Helm 3.18.4 和校验元数据。
 
 etcd 固定使用 Kubespray 的 `etcd_deployment_type: kubeadm`，因此 bundle 同时携带
 `quay.io/coreos/etcd:v3.6.10` 容器镜像和 etcd 二进制 tar：前者用于 stacked-etcd static Pod，后者供
@@ -29,7 +30,8 @@ GitHub 仓库只需要设置：
   构建账号。
 - 建议用 GitHub tag protection/ruleset 保护 `bundle-v2.31.0-r*`，只允许发布管理员创建。
 
-workflow 可由 `bundle-v2.31.0-r1` 形式的 Git tag 或 `workflow_dispatch` 触发。它不会推送
+workflow 可由 `bundle-v2.31.0-r1`、`addon-nfd-v0.19.0-r1` 形式的 Git tag 或
+`workflow_dispatch` 触发。手动触发时 `artifact` 必须与 `release_tag` 前缀一致。它不会推送
 `latest`，结束时会在 job summary 输出唯一可交付引用：
 
 ```text
@@ -46,7 +48,7 @@ ACR repository 应启用 tag immutability、漏洞扫描和保留策略；h139 �
 
 ```bash
 python3 -m unittest discover -s tests -v
-bash -n scripts/build-bundle.sh payload/*.sh
+bash -n scripts/build-bundle.sh payload/*.sh addons/nfd/scripts/*.sh addons/nfd/payload/*.sh
 python3 -m py_compile scripts/*.py tests/*.py
 ```
 

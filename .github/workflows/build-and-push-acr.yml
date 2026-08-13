@@ -3,13 +3,22 @@ name: Build and push Kubespray offline bundle
 on:
   workflow_dispatch:
     inputs:
+      artifact:
+        description: Artifact to build
+        required: true
+        default: base
+        type: choice
+        options:
+          - base
+          - nfd
       release_tag:
-        description: Immutable ACR tag, for example bundle-v2.31.0-r1
+        description: Immutable ACR tag
         required: true
         type: string
   push:
     tags:
       - bundle-v2.31.0-r*
+      - addon-nfd-v0.19.0-r*
 
 permissions:
   contents: read
@@ -36,7 +45,19 @@ jobs:
           ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
         run: |
           set -euo pipefail
-          [[ "${RELEASE_TAG}" =~ ^bundle-v2\.31\.0-r[1-9][0-9]*$ ]]
+          if [[ "${RELEASE_TAG}" =~ ^bundle-v2\.31\.0-r[1-9][0-9]*$ ]]; then
+            artifact=base
+          elif [[ "${RELEASE_TAG}" =~ ^addon-nfd-v0\.19\.0-r[1-9][0-9]*$ ]]; then
+            artifact=nfd
+          else
+            echo "unsupported release tag: ${RELEASE_TAG}" >&2
+            exit 2
+          fi
+          requested_artifact='${{ inputs.artifact }}'
+          if test -n "${requested_artifact}"; then
+            test "${requested_artifact}" = "${artifact}"
+          fi
+          printf 'artifact=%s\n' "${artifact}" >> "${GITHUB_ENV}"
           python3 scripts/validate-acr-repository.py "${ACR_IMAGE}"
           test -n "${ACR_USERNAME}"
           test -n "${ACR_PASSWORD}"
@@ -46,32 +67,49 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y apt-utils podman python3-venv zstd
+          sudo apt-get install -y apt-utils podman python3-venv skopeo zstd
           docker buildx version
 
       - name: Build and verify bundle
         shell: bash
-        run: ./scripts/build-bundle.sh
+        run: |
+          set -euo pipefail
+          if test "${artifact}" = base; then
+            ./scripts/build-bundle.sh
+          else
+            ./addons/nfd/scripts/build-bundle.sh
+          fi
 
       - name: Assert the bundle did not grow beyond the pilot transport budget
         shell: bash
         run: |
           set -euo pipefail
-          test "$(stat -c %s dist/kubespray-offline-base.tar.zst)" -le 107374182400
+          if test "${artifact}" = base; then
+            archive=dist/kubespray-offline-base.tar.zst
+          else
+            archive=dist/nfd/jasper-k8s-nfd-offline.tar.zst
+          fi
+          test "$(stat -c %s "${archive}")" -le 107374182400
 
       - name: Build artifact image
         shell: bash
         run: |
           set -euo pipefail
-          cp Dockerfile dist/Dockerfile
+          if test "${artifact}" = base; then
+            context=dist
+            dockerfile="${GITHUB_WORKSPACE}/Dockerfile"
+          else
+            context=dist/nfd
+            dockerfile="${GITHUB_WORKSPACE}/addons/nfd/Dockerfile"
+          fi
           docker buildx build \
             --platform linux/amd64 \
             --provenance=false \
             --sbom=false \
             --load \
             --tag "${ACR_IMAGE}:${RELEASE_TAG}" \
-            --file dist/Dockerfile \
-            dist
+            --file "${dockerfile}" \
+            "${context}"
 
       - name: Log in and push to ACR
         shell: bash
@@ -103,10 +141,10 @@ jobs:
       - name: Upload build metadata
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: kubespray-offline-bundle-metadata-${{ env.RELEASE_TAG }}
+          name: jasper-k8s-offline-metadata-${{ env.RELEASE_TAG }}
           path: |
-            dist/SHA256SUMS
-            dist/provenance.json
-            dist/source-images.lock
+            dist/**/SHA256SUMS
+            dist/**/provenance.json
+            dist/**/source-images.lock
           if-no-files-found: error
           retention-days: 30
