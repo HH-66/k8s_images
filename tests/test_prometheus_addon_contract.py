@@ -67,6 +67,15 @@ class PrometheusAddonContractTests(unittest.TestCase):
         self.assertFalse(values["prometheusOperator"]["admissionWebhooks"]["enabled"])
         self.assertFalse(values["prometheusOperator"]["tls"]["enabled"])
         self.assertFalse(values["grafana"]["persistence"]["enabled"])
+        self.assertEqual(
+            {"cpu": "100m", "memory": "256Mi"},
+            values["grafana"]["sidecar"]["resources"]["requests"],
+        )
+        self.assertEqual(
+            values["grafana"]["sidecar"]["resources"]["requests"],
+            values["grafana"]["sidecar"]["resources"]["limits"],
+        )
+        self.assertEqual(10, values["grafana"]["readinessProbe"]["initialDelaySeconds"])
 
     def test_builder_and_payload_are_digest_pinned(self) -> None:
         script = ADDON / "scripts/build-bundle.sh"
