@@ -41,7 +41,7 @@ document = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 expected = {
     "schema_version": 1,
     "artifact": "jasper-k8s-gpu-operator-offline",
-    "profile": "h139-gpu-operator-r1",
+    "profile": "h139-gpu-operator-r2",
     "target": {"os": "linux", "architecture": "amd64"},
     "components": {
         "gpu-operator": {

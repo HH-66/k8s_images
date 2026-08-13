@@ -39,6 +39,17 @@ toolkit:
   image: container-toolkit
   version: v1.19.1@sha256:05308cb0f8ad06f82f70d6f64321b3c99ab4836bb28fe50bb5d0cd0e79e7afba
   imagePullPolicy: IfNotPresent
+  env:
+    - name: CONTAINERD_CONFIG
+      value: /etc/containerd/config.toml
+    - name: CONTAINERD_SOCKET
+      value: /run/containerd/containerd.sock
+    - name: CONTAINERD_RUNTIME_CLASS
+      value: nvidia
+    - name: CONTAINERD_SET_AS_DEFAULT
+      value: "false"
+    - name: CDI_ENABLED
+      value: "true"
 
 devicePlugin:
   enabled: true

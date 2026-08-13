@@ -44,7 +44,7 @@ class GPUOperatorAddonContractTests(unittest.TestCase):
         ):
             self.assertRegex(values[name], r"^sha256:[0-9a-f]{64}$")
         self.assertEqual("3.18.4", values["HELM_VERSION"])
-        self.assertEqual("h139-gpu-operator-r1", values["ADDON_PROFILE"])
+        self.assertEqual("h139-gpu-operator-r2", values["ADDON_PROFILE"])
 
     def test_values_enable_only_the_host_driver_pilot_components(self) -> None:
         config = yaml.safe_load((ADDON / "values.yaml").read_text(encoding="utf-8"))
@@ -78,6 +78,19 @@ class GPUOperatorAddonContractTests(unittest.TestCase):
         self.assertFalse(config["operator"]["cleanupCRD"])
         self.assertFalse(config["operator"]["upgradeCRD"])
         self.assertFalse(config["dcgmExporter"]["serviceMonitor"]["enabled"])
+        self.assertEqual(
+            [
+                {"name": "CONTAINERD_CONFIG", "value": "/etc/containerd/config.toml"},
+                {
+                    "name": "CONTAINERD_SOCKET",
+                    "value": "/run/containerd/containerd.sock",
+                },
+                {"name": "CONTAINERD_RUNTIME_CLASS", "value": "nvidia"},
+                {"name": "CONTAINERD_SET_AS_DEFAULT", "value": "false"},
+                {"name": "CDI_ENABLED", "value": "true"},
+            ],
+            config["toolkit"]["env"],
+        )
 
     def test_values_have_no_public_registry_fallback(self) -> None:
         content = (ADDON / "values.yaml").read_text(encoding="utf-8")
