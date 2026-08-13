@@ -13,11 +13,13 @@ for path in \
   charts/rancher-2.15.0.tgz \
   images/fleet-agent-linux-amd64.tar \
   images/fleet-linux-amd64.tar \
+  images/kuberlr-kubectl-linux-amd64.tar \
   images/rancher-agent-linux-amd64.tar \
   images/rancher-linux-amd64.tar \
   images/rancher-shell-linux-amd64.tar \
   images/rancher-webhook-linux-amd64.tar \
   images/remotedialer-proxy-linux-amd64.tar \
+  images/turtles-linux-amd64.tar \
   images/source-images.lock \
   licenses/rancher-Apache-2.0.txt \
   provenance.json \
@@ -59,6 +61,8 @@ expected = {
     "docker.io/rancher/remotedialer-proxy:v0.8.0": "sha256:402423af0e0ae6d3f4b7e54db1bc055d23c7303917818d34876113b13516b35b",
     "docker.io/rancher/shell:v0.8.1": "sha256:928944dedfdccdcbcb14227377427798747ca468212341c5706e8745203037b0",
     "docker.io/rancher/rancher-agent:v2.15.0": "sha256:bc58d78aea17a2ca875e6dd2c071d3a9dd4a2fee24f659ad3dacc855905c9bfd",
+    "docker.io/rancher/turtles:v0.27.0": "sha256:1c0c79ae2a937e901eeb1d9ce05c56f927ac75a2257afb8a4c4b6e3de8113ef2",
+    "docker.io/rancher/kuberlr-kubectl:v8.1.1": "sha256:a3c11e9e2b2d8ee51060cfdc1b0d6edc20da56c708b6b89fdc4f072cc5937e99",
 }
 lock = Path(sys.argv[2]).read_text(encoding="utf-8").splitlines()
 if lock != [f"{name}@{digest}" for name, digest in expected.items()]:

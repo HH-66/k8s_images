@@ -99,6 +99,12 @@ copy_image "${RANCHER_SHELL_IMAGE}" "${RANCHER_SHELL_IMAGE_TAG}" \
 copy_image "${RANCHER_AGENT_IMAGE}" "${RANCHER_AGENT_IMAGE_TAG}" \
   "${RANCHER_AGENT_IMAGE_AMD64_DIGEST}" \
   "${build_root}/outputs/images/rancher-agent-linux-amd64.tar"
+copy_image "${TURTLES_IMAGE}" "${TURTLES_IMAGE_TAG}" \
+  "${TURTLES_IMAGE_AMD64_DIGEST}" \
+  "${build_root}/outputs/images/turtles-linux-amd64.tar"
+copy_image "${KUBERLR_KUBECTL_IMAGE}" "${KUBERLR_KUBECTL_IMAGE_TAG}" \
+  "${KUBERLR_KUBECTL_IMAGE_AMD64_DIGEST}" \
+  "${build_root}/outputs/images/kuberlr-kubectl-linux-amd64.tar"
 
 cp "${addon_root}/values.yaml" \
   "${build_root}/outputs/values/rancher-values.yaml"
@@ -120,6 +126,7 @@ images = {}
 for name in (
     "RANCHER", "FLEET", "FLEET_AGENT", "RANCHER_WEBHOOK",
     "REMOTEDIALER_PROXY", "RANCHER_SHELL", "RANCHER_AGENT",
+    "TURTLES", "KUBERLR_KUBECTL",
 ):
     images[name.lower().replace("_", "-")] = {
         "source": os.environ[f"{name}_IMAGE"],

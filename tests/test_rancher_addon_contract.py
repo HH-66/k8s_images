@@ -37,7 +37,15 @@ class RancherAddonContractTests(unittest.TestCase):
             for key, value in values.items()
             if key.endswith("_IMAGE_AMD64_DIGEST")
         ]
-        self.assertEqual(7, len(digests))
+        self.assertEqual(9, len(digests))
+        self.assertEqual(
+            "sha256:1c0c79ae2a937e901eeb1d9ce05c56f927ac75a2257afb8a4c4b6e3de8113ef2",
+            values["TURTLES_IMAGE_AMD64_DIGEST"],
+        )
+        self.assertEqual(
+            "sha256:a3c11e9e2b2d8ee51060cfdc1b0d6edc20da56c708b6b89fdc4f072cc5937e99",
+            values["KUBERLR_KUBECTL_IMAGE_AMD64_DIGEST"],
+        )
         for digest in digests:
             self.assertRegex(digest, r"^sha256:[0-9a-f]{64}$")
 
@@ -69,7 +77,7 @@ class RancherAddonContractTests(unittest.TestCase):
         subprocess.run(["bash", "-n", verifier], check=True)
         subprocess.run(["python3", "-m", "py_compile", renderer], check=True)
         content = builder.read_text(encoding="utf-8")
-        self.assertEqual(7, content.count('copy_image "${'))
+        self.assertEqual(9, content.count('copy_image "${'))
         self.assertIn("--preserve-digests", content)
         self.assertIn("verify-rancher-bundle.sh", content)
 
