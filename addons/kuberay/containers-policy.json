@@ -1,0 +1,9 @@
+{
+  "default": [{"type": "reject"}],
+  "transports": {
+    "docker": {
+      "quay.io/kuberay/operator": [{"type": "insecureAcceptAnything"}],
+      "docker.io/rayproject/ray": [{"type": "insecureAcceptAnything"}]
+    }
+  }
+}

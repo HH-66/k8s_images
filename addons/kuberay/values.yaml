@@ -1,0 +1,32 @@
+replicas: 1
+image:
+  repository: 10.144.66.139:35000/kuberay/operator
+  tag: v1.6.2@__KUBERAY_OPERATOR_IMAGE_AMD64_DIGEST__
+  pullPolicy: IfNotPresent
+priorityClassName: jasper-service-high
+leaderElectionEnabled: true
+batchScheduler:
+  enabled: false
+  name: ""
+featureGates:
+  - name: RayClusterStatusConditions
+    enabled: true
+  - name: RayJobDeletionPolicy
+    enabled: true
+  - name: RayMultiHostIndexing
+    enabled: true
+  - name: RayServiceIncrementalUpgrade
+    enabled: false
+  - name: RayCronJob
+    enabled: false
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: false
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

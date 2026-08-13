@@ -14,6 +14,7 @@ on:
           - gpu-operator
           - scheduler-plugins
           - kueue
+          - kuberay
       release_tag:
         description: Immutable ACR tag
         required: true
@@ -25,6 +26,7 @@ on:
       - addon-gpu-operator-v26.3.3-r*
       - addon-scheduler-plugins-v0.35.4-devel-r*
       - addon-kueue-v0.19.0-r*
+      - addon-kuberay-v1.6.2-r*
 
 permissions:
   contents: read
@@ -61,6 +63,8 @@ jobs:
             artifact=scheduler-plugins
           elif [[ "${RELEASE_TAG}" =~ ^addon-kueue-v0\.19\.0-r[1-9][0-9]*$ ]]; then
             artifact=kueue
+          elif [[ "${RELEASE_TAG}" =~ ^addon-kuberay-v1\.6\.2-r[1-9][0-9]*$ ]]; then
+            artifact=kuberay
           else
             echo "unsupported release tag: ${RELEASE_TAG}" >&2
             exit 2
@@ -92,6 +96,7 @@ jobs:
             gpu-operator) ./addons/gpu-operator/scripts/build-bundle.sh ;;
             scheduler-plugins) ./addons/scheduler-plugins/scripts/build-bundle.sh ;;
             kueue) ./addons/kueue/scripts/build-bundle.sh ;;
+            kuberay) ./addons/kuberay/scripts/build-bundle.sh ;;
           esac
 
       - name: Assert the bundle did not grow beyond the pilot transport budget
@@ -104,6 +109,7 @@ jobs:
             gpu-operator) archive=dist/gpu-operator/jasper-k8s-gpu-operator-offline.tar.zst ;;
             scheduler-plugins) archive=dist/scheduler-plugins/jasper-k8s-scheduler-plugins-offline.tar.zst ;;
             kueue) archive=dist/kueue/jasper-k8s-kueue-offline.tar.zst ;;
+            kuberay) archive=dist/kuberay/jasper-k8s-kuberay-offline.tar.zst ;;
           esac
           test "$(stat -c %s "${archive}")" -le 107374182400
 
@@ -131,6 +137,10 @@ jobs:
             kueue)
               context=dist/kueue
               dockerfile="${GITHUB_WORKSPACE}/addons/kueue/Dockerfile"
+              ;;
+            kuberay)
+              context=dist/kuberay
+              dockerfile="${GITHUB_WORKSPACE}/addons/kuberay/Dockerfile"
               ;;
           esac
           docker buildx build \

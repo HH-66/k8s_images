@@ -24,6 +24,11 @@ source tree 构建 linux/amd64 scheduler 镜像，并从同一 commit 打包版�
 `batch/job` integration；RayJob integration 要等 KubeRay CRD 安装后再显式启用，避免以延迟发现 API
 冒充已经完成的运行时闭环。
 
+第五个独立 add-on artifact 是 KubeRay Operator `v1.6.2` 和 Ray runtime `2.56.1`。builder 从固定
+KubeRay commit/tree 打包 operator chart，携带 operator 与 CPU Ray runtime 的 linux/amd64 manifest、
+Apache-2.0 licenses 和 Helm 3.18.4。Ray runtime 仅作为 RayJob 控制面与调度验收镜像；真实训练使用的
+CUDA/PyTorch 业务镜像仍由训练项目单独构建和批准。
+
 etcd 固定使用 Kubespray 的 `etcd_deployment_type: kubeadm`，因此 bundle 同时携带
 `quay.io/coreos/etcd:v3.6.10` 容器镜像和 etcd 二进制 tar：前者用于 stacked-etcd static Pod，后者供
 containerd 路径安装 `etcdctl`/`etcdutl`。该模式只支持干净新建集群，不能用于把已有 host-etcd 集群
