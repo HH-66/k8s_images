@@ -146,7 +146,10 @@ pod_spec = rancher_deployments[0]["spec"]["template"]["spec"]
 if pod_spec.get("priorityClassName") != "jasper-service-high":
     raise SystemExit("Rancher priority class drifted")
 container = pod_spec["containers"][0]
-if container.get("image") != "10.144.66.139:35000/rancher/rancher:v2.15.0":
+if container.get("image") != (
+    "10.144.66.139:35000/rancher/rancher:v2.15.0@"
+    "sha256:59d2643bdf3b76bfbc90410aff1f2b08765ac741d3d2349673381dcd685bf5f1"
+):
     raise SystemExit("Rancher render does not use the local registry")
 if "--no-cacerts" in container.get("args", []):
     raise SystemExit("Rancher dynamic self-signed CA generation was disabled")

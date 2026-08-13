@@ -56,6 +56,10 @@ class RancherAddonContractTests(unittest.TestCase):
         self.assertEqual("10.144.66.139:35000", values["systemDefaultRegistry"])
         self.assertTrue(values["useBundledSystemChart"])
         self.assertFalse(values["postDelete"]["enabled"])
+        self.assertEqual(
+            "v2.15.0@sha256:59d2643bdf3b76bfbc90410aff1f2b08765ac741d3d2349673381dcd685bf5f1",
+            values["image"]["tag"],
+        )
 
     def test_builder_and_payload_are_digest_pinned(self) -> None:
         builder = ADDON / "scripts/build-bundle.sh"
