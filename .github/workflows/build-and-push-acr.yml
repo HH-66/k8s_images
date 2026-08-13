@@ -17,6 +17,7 @@ on:
           - kuberay
           - prometheus
           - rancher
+          - kubepi
       release_tag:
         description: Immutable ACR tag
         required: true
@@ -31,6 +32,7 @@ on:
       - addon-kuberay-v1.6.2-r*
       - addon-prometheus-v88.2.0-r*
       - addon-rancher-v2.15.0-r*
+      - addon-kubepi-v2.0.2-r*
 
 permissions:
   contents: read
@@ -73,6 +75,8 @@ jobs:
             artifact=prometheus
           elif [[ "${RELEASE_TAG}" =~ ^addon-rancher-v2\.15\.0-r[1-9][0-9]*$ ]]; then
             artifact=rancher
+          elif [[ "${RELEASE_TAG}" =~ ^addon-kubepi-v2\.0\.2-r[1-9][0-9]*$ ]]; then
+            artifact=kubepi
           else
             echo "unsupported release tag: ${RELEASE_TAG}" >&2
             exit 2
@@ -109,6 +113,7 @@ jobs:
             kuberay) ./addons/kuberay/scripts/build-bundle.sh 2>&1 ;;
             prometheus) ./addons/prometheus/scripts/build-bundle.sh 2>&1 ;;
             rancher) ./addons/rancher/scripts/build-bundle.sh 2>&1 ;;
+            kubepi) ./addons/kubepi/scripts/build-bundle.sh 2>&1 ;;
           esac | tee "${build_log}"
           build_status=${PIPESTATUS[0]}
           set -e
@@ -130,6 +135,7 @@ jobs:
             kuberay) archive=dist/kuberay/jasper-k8s-kuberay-offline.tar.zst ;;
             prometheus) archive=dist/prometheus/jasper-k8s-prometheus-offline.tar.zst ;;
             rancher) archive=dist/rancher/jasper-k8s-rancher-offline.tar.zst ;;
+            kubepi) archive=dist/kubepi/jasper-k8s-kubepi-offline.tar.zst ;;
           esac
           test "$(stat -c %s "${archive}")" -le 107374182400
 
@@ -169,6 +175,10 @@ jobs:
             rancher)
               context=dist/rancher
               dockerfile="${GITHUB_WORKSPACE}/addons/rancher/Dockerfile"
+              ;;
+            kubepi)
+              context=dist/kubepi
+              dockerfile="${GITHUB_WORKSPACE}/addons/kubepi/Dockerfile"
               ;;
           esac
           docker buildx build \

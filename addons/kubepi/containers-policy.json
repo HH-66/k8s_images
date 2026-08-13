@@ -1,0 +1,21 @@
+{
+  "default": [
+    {
+      "type": "reject"
+    }
+  ],
+  "transports": {
+    "docker": {
+      "docker.io/1panel/kubepi": [
+        {
+          "type": "insecureAcceptAnything"
+        }
+      ],
+      "docker.io/library/nginx": [
+        {
+          "type": "insecureAcceptAnything"
+        }
+      ]
+    }
+  }
+}

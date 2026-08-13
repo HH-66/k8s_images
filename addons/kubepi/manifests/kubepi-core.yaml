@@ -1,0 +1,234 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubepi-system
+  labels:
+    app.kubernetes.io/part-of: kubepi
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubepi
+  namespace: kubepi-system
+  labels:
+    app.kubernetes.io/name: kubepi
+automountServiceAccountToken: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: jasper-kubepi-cluster-admin
+  labels:
+    app.kubernetes.io/name: kubepi
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: kubepi
+    namespace: kubepi-system
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubepi-nginx
+  namespace: kubepi-system
+  labels:
+    app.kubernetes.io/name: kubepi
+data:
+  nginx.conf: |
+    pid /tmp/nginx.pid;
+    error_log /dev/stderr notice;
+    events {}
+    http {
+      access_log /dev/stdout;
+      client_body_temp_path /tmp/client_body;
+      proxy_temp_path /tmp/proxy;
+      fastcgi_temp_path /tmp/fastcgi;
+      uwsgi_temp_path /tmp/uwsgi;
+      scgi_temp_path /tmp/scgi;
+      map $http_upgrade $connection_upgrade {
+        default upgrade;
+        '' close;
+      }
+      server {
+        listen 8443 ssl;
+        server_name _;
+        ssl_certificate /etc/kubepi-tls/tls.crt;
+        ssl_certificate_key /etc/kubepi-tls/tls.key;
+        ssl_protocols TLSv1.2 TLSv1.3;
+        location / {
+          proxy_pass http://127.0.0.1:8080;
+          proxy_http_version 1.1;
+          proxy_set_header Host $http_host;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto https;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection $connection_upgrade;
+          proxy_read_timeout 3600s;
+          proxy_send_timeout 3600s;
+        }
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubepi
+  namespace: kubepi-system
+  labels:
+    app.kubernetes.io/name: kubepi
+    app.kubernetes.io/version: v2.0.2
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kubepi
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kubepi
+        app.kubernetes.io/version: v2.0.2
+    spec:
+      serviceAccountName: kubepi
+      priorityClassName: jasper-service-default
+      nodeSelector:
+        kubernetes.io/hostname: h139
+      securityContext:
+        fsGroup: 101
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: kubepi
+          image: 10.144.66.139:35000/1panel/kubepi:v2.0.2@__KUBEPI_IMAGE_AMD64_DIGEST__
+          imagePullPolicy: IfNotPresent
+          args:
+            - kubepi-server
+            - -c
+            - /etc/kubepi
+            - --server-bind-host
+            - 127.0.0.1
+            - --server-bind-port
+            - "8080"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+          startupProbe:
+            exec:
+              command:
+                - wget
+                - --quiet
+                - --output-document=/dev/null
+                - http://127.0.0.1:8080/kubepi
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - wget
+                - --quiet
+                - --output-document=/dev/null
+                - http://127.0.0.1:8080/kubepi
+            periodSeconds: 10
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/kubepi
+            - name: runtime-config
+              mountPath: /etc/kubepi/app.yml
+              subPath: app.yml
+              readOnly: true
+        - name: tls-proxy
+          image: 10.144.66.139:35000/library/nginx:1.30.4-alpine3.24@__NGINX_IMAGE_AMD64_DIGEST__
+          imagePullPolicy: IfNotPresent
+          command:
+            - /usr/sbin/nginx
+          args:
+            - -c
+            - /etc/nginx/nginx.conf
+            - -g
+            - daemon off;
+          ports:
+            - name: https
+              containerPort: 8443
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 101
+            runAsNonRoot: true
+            runAsUser: 101
+          readinessProbe:
+            httpGet:
+              scheme: HTTPS
+              path: /kubepi
+              port: https
+            periodSeconds: 10
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+              readOnly: true
+            - name: tls
+              mountPath: /etc/kubepi-tls
+              readOnly: true
+            - name: nginx-tmp
+              mountPath: /tmp
+      volumes:
+        - name: data
+          hostPath:
+            path: /var/lib/jasper-k8s/kubepi
+            type: Directory
+        - name: runtime-config
+          secret:
+            secretName: kubepi-runtime
+            defaultMode: 384
+        - name: nginx-config
+          configMap:
+            name: kubepi-nginx
+        - name: tls
+          secret:
+            secretName: kubepi-tls
+            defaultMode: 292
+        - name: nginx-tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubepi
+  namespace: kubepi-system
+  labels:
+    app.kubernetes.io/name: kubepi
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: kubepi
+  ports:
+    - name: https
+      port: 443
+      targetPort: https
+      protocol: TCP
