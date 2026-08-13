@@ -1,0 +1,46 @@
+enablePrometheus: false
+enableCertManager: false
+controllerManager:
+  replicas: 1
+  manager:
+    priorityClassName: system-cluster-critical
+    image:
+      repository: 10.144.66.139:35000/kueue/kueue-controller
+      tag: release-0.19@__KUEUE_IMAGE_AMD64_DIGEST__
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  podDisruptionBudget:
+    enabled: false
+managerConfig:
+  controllerManagerConfigYaml: |-
+    apiVersion: config.kueue.x-k8s.io/v1beta2
+    kind: Configuration
+    health:
+      healthProbeBindAddress: :8081
+    metrics:
+      bindAddress: :8443
+    webhook:
+      port: 9443
+    leaderElection:
+      leaderElect: true
+      resourceName: c1f6bfd2.kueue.x-k8s.io
+    waitForPodsReady:
+      timeout: 15m
+      blockAdmission: true
+      requeuingStrategy:
+        timestamp: Eviction
+        backoffLimitCount: null
+        backoffBaseSeconds: 60
+        backoffMaxSeconds: 3600
+    managedJobsNamespaceSelector:
+      matchLabels:
+        workload.jasper.ai/kueue-managed: "true"
+    integrations:
+      frameworks:
+      - batch/job

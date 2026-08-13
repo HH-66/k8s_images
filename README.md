@@ -19,6 +19,11 @@ source tree 构建 linux/amd64 scheduler 镜像，并从同一 commit 打包版�
 `gitVersion=v1.35.4`，并运行二进制 `--version` 检查。h139 只启用 `NodeResourceTopologyMatch` 第二调度器，
 不部署 controller，也不启用 Coscheduling 或 CapacityScheduling。
 
+第四个独立 add-on artifact 是 Kueue `v0.19.0`。builder 固定未签名 tag object、source commit/tree、
+官方 release chart SHA-256 和 linux/amd64 controller image manifest digest。h139 首次安装仅启用
+`batch/job` integration；RayJob integration 要等 KubeRay CRD 安装后再显式启用，避免以延迟发现 API
+冒充已经完成的运行时闭环。
+
 etcd 固定使用 Kubespray 的 `etcd_deployment_type: kubeadm`，因此 bundle 同时携带
 `quay.io/coreos/etcd:v3.6.10` 容器镜像和 etcd 二进制 tar：前者用于 stacked-etcd static Pod，后者供
 containerd 路径安装 `etcdctl`/`etcdutl`。该模式只支持干净新建集群，不能用于把已有 host-etcd 集群
