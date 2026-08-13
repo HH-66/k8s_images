@@ -11,6 +11,7 @@ require_nonempty_file() {
 for path in \
   SHA256SUMS \
   charts/rancher-2.15.0.tgz \
+  images/cluster-api-controller-linux-amd64.tar \
   images/fleet-agent-linux-amd64.tar \
   images/fleet-linux-amd64.tar \
   images/kuberlr-kubectl-linux-amd64.tar \
@@ -63,6 +64,7 @@ expected = {
     "docker.io/rancher/rancher-agent:v2.15.0": "sha256:bc58d78aea17a2ca875e6dd2c071d3a9dd4a2fee24f659ad3dacc855905c9bfd",
     "docker.io/rancher/turtles:v0.27.0": "sha256:1c0c79ae2a937e901eeb1d9ce05c56f927ac75a2257afb8a4c4b6e3de8113ef2",
     "docker.io/rancher/kuberlr-kubectl:v8.1.1": "sha256:a3c11e9e2b2d8ee51060cfdc1b0d6edc20da56c708b6b89fdc4f072cc5937e99",
+    "docker.io/rancher/cluster-api-controller:v1.13.3": "sha256:d639e675ff9bbaead8e84dc2e8b9337b2fecdb1d0a409ee24eaed9d314f109c7",
 }
 lock = Path(sys.argv[2]).read_text(encoding="utf-8").splitlines()
 if lock != [f"{name}@{digest}" for name, digest in expected.items()]:

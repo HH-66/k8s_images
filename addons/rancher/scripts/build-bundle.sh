@@ -105,6 +105,10 @@ copy_image "${TURTLES_IMAGE}" "${TURTLES_IMAGE_TAG}" \
 copy_image "${KUBERLR_KUBECTL_IMAGE}" "${KUBERLR_KUBECTL_IMAGE_TAG}" \
   "${KUBERLR_KUBECTL_IMAGE_AMD64_DIGEST}" \
   "${build_root}/outputs/images/kuberlr-kubectl-linux-amd64.tar"
+copy_image "${CLUSTER_API_CONTROLLER_IMAGE}" \
+  "${CLUSTER_API_CONTROLLER_IMAGE_TAG}" \
+  "${CLUSTER_API_CONTROLLER_IMAGE_AMD64_DIGEST}" \
+  "${build_root}/outputs/images/cluster-api-controller-linux-amd64.tar"
 
 cp "${addon_root}/values.yaml" \
   "${build_root}/outputs/values/rancher-values.yaml"
@@ -126,7 +130,7 @@ images = {}
 for name in (
     "RANCHER", "FLEET", "FLEET_AGENT", "RANCHER_WEBHOOK",
     "REMOTEDIALER_PROXY", "RANCHER_SHELL", "RANCHER_AGENT",
-    "TURTLES", "KUBERLR_KUBECTL",
+    "TURTLES", "KUBERLR_KUBECTL", "CLUSTER_API_CONTROLLER",
 ):
     images[name.lower().replace("_", "-")] = {
         "source": os.environ[f"{name}_IMAGE"],
