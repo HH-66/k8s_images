@@ -1,0 +1,32 @@
+scheduler:
+  name: topology-aware-scheduler
+  image: 10.144.66.139:35000/scheduler-plugins/kube-scheduler:v0.35.4-devel@__SCHEDULER_IMAGE_AMD64_DIGEST__
+  replicaCount: 1
+  leaderElect: true
+  priorityClassName: system-cluster-critical
+  resources:
+    requests:
+      cpu: 500m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+controller:
+  image: 10.144.66.139:35000/scheduler-plugins/kube-scheduler:v0.35.4-devel@__SCHEDULER_IMAGE_AMD64_DIGEST__
+  replicaCount: 0
+plugins:
+  enabled:
+    - NodeResourceTopologyMatch
+  disabled:
+    - Coscheduling
+    - CapacityScheduling
+    - NodeResourcesAllocatable
+pluginConfig:
+  - name: NodeResourceTopologyMatch
+    args:
+      scoringStrategy:
+        type: LeastAllocated
+      cacheResyncPeriodSeconds: 5
+      cache:
+        foreignPodsDetect: OnlyExclusiveResources
+        resyncMethod: OnlyExclusiveResources

@@ -12,6 +12,7 @@ on:
           - base
           - nfd
           - gpu-operator
+          - scheduler-plugins
       release_tag:
         description: Immutable ACR tag
         required: true
@@ -21,6 +22,7 @@ on:
       - bundle-v2.31.0-r*
       - addon-nfd-v0.19.0-r*
       - addon-gpu-operator-v26.3.3-r*
+      - addon-scheduler-plugins-v0.35.4-devel-r*
 
 permissions:
   contents: read
@@ -53,6 +55,8 @@ jobs:
             artifact=nfd
           elif [[ "${RELEASE_TAG}" =~ ^addon-gpu-operator-v26\.3\.3-r[1-9][0-9]*$ ]]; then
             artifact=gpu-operator
+          elif [[ "${RELEASE_TAG}" =~ ^addon-scheduler-plugins-v0\.35\.4-devel-r[1-9][0-9]*$ ]]; then
+            artifact=scheduler-plugins
           else
             echo "unsupported release tag: ${RELEASE_TAG}" >&2
             exit 2
@@ -82,6 +86,7 @@ jobs:
             base) ./scripts/build-bundle.sh ;;
             nfd) ./addons/nfd/scripts/build-bundle.sh ;;
             gpu-operator) ./addons/gpu-operator/scripts/build-bundle.sh ;;
+            scheduler-plugins) ./addons/scheduler-plugins/scripts/build-bundle.sh ;;
           esac
 
       - name: Assert the bundle did not grow beyond the pilot transport budget
@@ -92,6 +97,7 @@ jobs:
             base) archive=dist/kubespray-offline-base.tar.zst ;;
             nfd) archive=dist/nfd/jasper-k8s-nfd-offline.tar.zst ;;
             gpu-operator) archive=dist/gpu-operator/jasper-k8s-gpu-operator-offline.tar.zst ;;
+            scheduler-plugins) archive=dist/scheduler-plugins/jasper-k8s-scheduler-plugins-offline.tar.zst ;;
           esac
           test "$(stat -c %s "${archive}")" -le 107374182400
 
@@ -111,6 +117,10 @@ jobs:
             gpu-operator)
               context=dist/gpu-operator
               dockerfile="${GITHUB_WORKSPACE}/addons/gpu-operator/Dockerfile"
+              ;;
+            scheduler-plugins)
+              context=dist/scheduler-plugins
+              dockerfile="${GITHUB_WORKSPACE}/addons/scheduler-plugins/Dockerfile"
               ;;
           esac
           docker buildx build \

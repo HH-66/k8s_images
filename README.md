@@ -11,6 +11,12 @@ NFD 0.19.0，只携带正式 release chart、linux/amd64 镜像、Helm 3.18.4 �
 operator/validator、container toolkit、device plugin/GFD 和 DCGM Exporter 的四个 linux/amd64 镜像以及
 Helm 3.18.4。所有启用或禁用路径均改写为 h139 本地 registry，禁止运行时回落公网 registry。
 
+第三个独立 add-on artifact 是 scheduler-plugins `v0.35.4-devel`。上游只发布了未签名 Git tag，且该
+tag 的 chart 元数据仍为 0.34.7、官方 registry 没有同名镜像，因此 builder 从固定 tag object、commit 和
+source tree 构建 linux/amd64 scheduler 镜像，并从同一 commit 打包版本修正为 0.35.4-devel 的 chart。
+该 source 的 Go module 精确依赖 Kubernetes 1.35.4。h139 只启用 `NodeResourceTopologyMatch` 第二调度器，
+不部署 controller，也不启用 Coscheduling 或 CapacityScheduling。
+
 etcd 固定使用 Kubespray 的 `etcd_deployment_type: kubeadm`，因此 bundle 同时携带
 `quay.io/coreos/etcd:v3.6.10` 容器镜像和 etcd 二进制 tar：前者用于 stacked-etcd static Pod，后者供
 containerd 路径安装 `etcdctl`/`etcdutl`。该模式只支持干净新建集群，不能用于把已有 host-etcd 集群
@@ -35,6 +41,7 @@ GitHub 仓库只需要设置：
 
 workflow 可由 `bundle-v2.31.0-r1`、`addon-nfd-v0.19.0-r1`、
 `addon-gpu-operator-v26.3.3-r1` 形式的 Git tag 或
+`addon-scheduler-plugins-v0.35.4-devel-r1` 形式的 Git tag 或
 `workflow_dispatch` 触发。手动触发时 `artifact` 必须与 `release_tag` 前缀一致。它不会推送
 `latest`，结束时会在 job summary 输出唯一可交付引用：
 

@@ -115,11 +115,18 @@ class RepositoryContractTests(unittest.TestCase):
         self.assertNotIn("--raw | sha256sum", content)
         self.assertIn("addon-nfd-v0.19.0-r*", content)
         self.assertIn("addon-gpu-operator-v26.3.3-r*", content)
+        self.assertIn("addon-scheduler-plugins-v0.35.4-devel-r*", content)
         self.assertIn("./addons/nfd/scripts/build-bundle.sh", content)
         self.assertIn("./addons/gpu-operator/scripts/build-bundle.sh", content)
+        self.assertIn(
+            "./addons/scheduler-plugins/scripts/build-bundle.sh", content
+        )
         self.assertIn("${GITHUB_WORKSPACE}/addons/nfd/Dockerfile", content)
         self.assertIn(
             "${GITHUB_WORKSPACE}/addons/gpu-operator/Dockerfile", content
+        )
+        self.assertIn(
+            "${GITHUB_WORKSPACE}/addons/scheduler-plugins/Dockerfile", content
         )
 
     def test_list_generation_reuses_prepared_ansible_venv(self) -> None:
