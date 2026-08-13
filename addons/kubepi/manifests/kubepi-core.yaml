@@ -102,6 +102,34 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
         seccompProfile:
           type: RuntimeDefault
+      initContainers:
+        - name: prepare-config
+          image: 10.144.66.139:35000/1panel/kubepi:v2.0.2@__KUBEPI_IMAGE_AMD64_DIGEST__
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - cp /config-source/app.yml /config-runtime/app.yml && chmod 0600 /config-runtime/app.yml
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+          volumeMounts:
+            - name: runtime-config-source
+              mountPath: /config-source
+              readOnly: true
+            - name: runtime-config
+              mountPath: /config-runtime
       containers:
         - name: kubepi
           image: 10.144.66.139:35000/1panel/kubepi:v2.0.2@__KUBEPI_IMAGE_AMD64_DIGEST__
@@ -148,9 +176,7 @@ spec:
             - name: data
               mountPath: /var/lib/kubepi
             - name: runtime-config
-              mountPath: /etc/kubepi/app.yml
-              subPath: app.yml
-              readOnly: true
+              mountPath: /etc/kubepi
         - name: tls-proxy
           image: 10.144.66.139:35000/library/nginx:1.30.4-alpine3.24@__NGINX_IMAGE_AMD64_DIGEST__
           imagePullPolicy: IfNotPresent
@@ -202,10 +228,12 @@ spec:
           hostPath:
             path: /var/lib/jasper-k8s/kubepi
             type: Directory
-        - name: runtime-config
+        - name: runtime-config-source
           secret:
             secretName: kubepi-runtime
             defaultMode: 384
+        - name: runtime-config
+          emptyDir: {}
         - name: nginx-config
           configMap:
             name: kubepi-nginx

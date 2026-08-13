@@ -54,6 +54,14 @@ class KubePiAddonContractTests(unittest.TestCase):
         self.assertEqual("kubepi", spec["serviceAccountName"])
         self.assertEqual("jasper-service-default", spec["priorityClassName"])
         self.assertEqual("h139", spec["nodeSelector"]["kubernetes.io/hostname"])
+        init_containers = {item["name"]: item for item in spec["initContainers"]}
+        self.assertEqual(
+            ["/bin/sh", "-c"], init_containers["prepare-config"]["command"]
+        )
+        self.assertIn(
+            "cp /config-source/app.yml /config-runtime/app.yml",
+            init_containers["prepare-config"]["args"][0],
+        )
         containers = {item["name"]: item for item in spec["containers"]}
         self.assertEqual(2, len(containers))
         self.assertFalse(containers["kubepi"]["securityContext"]["privileged"])
@@ -62,6 +70,16 @@ class KubePiAddonContractTests(unittest.TestCase):
         )
         self.assertEqual("kubepi-server", containers["kubepi"]["args"][0])
         self.assertEqual("127.0.0.1", containers["kubepi"]["args"][4])
+        mounts = {
+            item["name"]: item for item in containers["kubepi"]["volumeMounts"]
+        }
+        self.assertEqual("/etc/kubepi", mounts["runtime-config"]["mountPath"])
+        self.assertNotIn("readOnly", mounts["runtime-config"])
+        volumes = {item["name"]: item for item in spec["volumes"]}
+        self.assertEqual(
+            "kubepi-runtime", volumes["runtime-config-source"]["secret"]["secretName"]
+        )
+        self.assertEqual({}, volumes["runtime-config"]["emptyDir"])
         self.assertEqual(["/usr/sbin/nginx"], containers["tls-proxy"]["command"])
         self.assertNotEqual(
             containers["kubepi"]["resources"]["requests"],

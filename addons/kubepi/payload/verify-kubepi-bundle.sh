@@ -54,6 +54,15 @@ if pod_spec.get("serviceAccountName") != "kubepi":
 if pod_spec.get("priorityClassName") != "jasper-service-default":
     raise SystemExit("KubePi priority class drifted")
 containers = {item["name"]: item for item in pod_spec["containers"]}
+init_containers = {item["name"]: item for item in pod_spec.get("initContainers", [])}
+if init_containers.get("prepare-config", {}).get("image") != (
+    "10.144.66.139:35000/1panel/kubepi:v2.0.2@" + kubepi_digest
+):
+    raise SystemExit("KubePi config initializer is not locally digest pinned")
+if "cp /config-source/app.yml /config-runtime/app.yml" not in (
+    init_containers["prepare-config"].get("args") or [""]
+)[0]:
+    raise SystemExit("KubePi config initializer does not prepare a writable config")
 if containers["kubepi"]["image"] != (
     "10.144.66.139:35000/1panel/kubepi:v2.0.2@" + kubepi_digest
 ):
@@ -62,12 +71,23 @@ if containers["tls-proxy"]["image"] != (
     "10.144.66.139:35000/library/nginx:1.30.4-alpine3.24@" + nginx_digest
 ):
     raise SystemExit("KubePi TLS proxy image is not locally digest pinned")
-if any(item.get("securityContext", {}).get("privileged") for item in containers.values()):
+if any(
+    item.get("securityContext", {}).get("privileged")
+    for item in [*containers.values(), *init_containers.values()]
+):
     raise SystemExit("KubePi pilot must not use privileged containers")
 if containers["kubepi"]["resources"]["requests"] == containers["kubepi"]["resources"]["limits"]:
     raise SystemExit("KubePi pilot must remain Burstable")
 if "127.0.0.1" not in containers["kubepi"].get("args", []):
     raise SystemExit("KubePi must listen only on the Pod loopback interface")
+volumes = {item["name"]: item for item in pod_spec["volumes"]}
+if (
+    volumes.get("runtime-config-source", {}).get("secret", {}).get("secretName")
+    != "kubepi-runtime"
+):
+    raise SystemExit("KubePi config source Secret drifted")
+if volumes.get("runtime-config", {}).get("emptyDir") != {}:
+    raise SystemExit("KubePi runtime config must use a writable emptyDir")
 binding = next(item for item in documents if item.get("kind") == "ClusterRoleBinding")
 if binding["roleRef"].get("name") != "cluster-admin":
     raise SystemExit("KubePi pilot is not bound to cluster-admin")
