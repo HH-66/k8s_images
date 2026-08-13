@@ -38,6 +38,7 @@ class SchedulerPluginsAddonContractTests(unittest.TestCase):
         self.assertIn("@sha256:", values["GO_BASE_IMAGE"])
         self.assertIn("@sha256:", values["DISTROLESS_BASE_IMAGE"])
         self.assertEqual("h139-scheduler-plugins-r1", values["ADDON_PROFILE"])
+        self.assertEqual("v1.35.4", values["KUBERNETES_BINARY_VERSION"])
 
     def test_values_enable_only_nrt_match_with_overreserve_cache(self) -> None:
         config = yaml.safe_load((ADDON / "values.yaml").read_text(encoding="utf-8"))
@@ -63,7 +64,9 @@ class SchedulerPluginsAddonContractTests(unittest.TestCase):
         self.assertIn("k8s\\.io/kubernetes v1\\.35\\.4", content)
         self.assertIn('build/scheduler/Dockerfile', content)
         self.assertNotIn('build/controller/Dockerfile', content)
-        self.assertIn('docker run --rm --platform linux/amd64', content)
+        self.assertIn('VERSION={sys.argv[3]}', content)
+        self.assertIn('Kubernetes ${KUBERNETES_BINARY_VERSION}', content)
+        self.assertIn('--entrypoint /bin/kube-scheduler', content)
         self.assertIn('skopeo copy', content)
         self.assertIn('scheduler_digest=$(python3 -', content)
         self.assertIn('upstream_tag_signed', content)

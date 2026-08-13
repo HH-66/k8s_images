@@ -14,7 +14,9 @@ Helm 3.18.4。所有启用或禁用路径均改写为 h139 本地 registry，禁
 第三个独立 add-on artifact 是 scheduler-plugins `v0.35.4-devel`。上游只发布了未签名 Git tag，且该
 tag 的 chart 元数据仍为 0.34.7、官方 registry 没有同名镜像，因此 builder 从固定 tag object、commit 和
 source tree 构建 linux/amd64 scheduler 镜像，并从同一 commit 打包版本修正为 0.35.4-devel 的 chart。
-该 source 的 Go module 精确依赖 Kubernetes 1.35.4。h139 只启用 `NodeResourceTopologyMatch` 第二调度器，
+该 source 的 Go module 精确依赖 Kubernetes 1.35.4。上游 Makefile 会把 devel tag 错误编码为
+`gitVersion=v0.35.4`，与 Kubernetes 1.35 的 compatibility-version 校验不兼容；builder 因此显式编码
+`gitVersion=v1.35.4`，并运行二进制 `--version` 检查。h139 只启用 `NodeResourceTopologyMatch` 第二调度器，
 不部署 controller，也不启用 Coscheduling 或 CapacityScheduling。
 
 etcd 固定使用 Kubespray 的 `etcd_deployment_type: kubeadm`，因此 bundle 同时携带

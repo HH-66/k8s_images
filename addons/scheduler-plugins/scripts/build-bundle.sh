@@ -90,16 +90,36 @@ tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner \
 "${build_root}/outputs/tools/helm" lint \
   "${build_root}/outputs/charts/scheduler-plugins-${SCHEDULER_PLUGINS_VERSION}.tgz"
 
+scheduler_dockerfile="${build_root}/scheduler.Dockerfile"
+python3 - \
+  "${source_root}/build/scheduler/Dockerfile" \
+  "${scheduler_dockerfile}" \
+  "${KUBERNETES_BINARY_VERSION}" <<'PY'
+import sys
+from pathlib import Path
+
+source = Path(sys.argv[1]).read_text(encoding="utf-8")
+old = "RUN make build-scheduler GO_BUILD_ENV='CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH}'"
+new = (
+    "RUN make build-scheduler "
+    f"VERSION={sys.argv[3]} "
+    "GO_BUILD_ENV='CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH}'"
+)
+if source.count(old) != 1:
+    raise SystemExit("unexpected upstream scheduler Dockerfile build command")
+Path(sys.argv[2]).write_text(source.replace(old, new), encoding="utf-8")
+PY
 scheduler_ref="jasper-build/scheduler-plugins/kube-scheduler:v${SCHEDULER_PLUGINS_VERSION}"
 docker build \
   --platform linux/amd64 \
   --build-arg "GO_BASE_IMAGE=${GO_BASE_IMAGE}" \
   --build-arg "DISTROLESS_BASE_IMAGE=${DISTROLESS_BASE_IMAGE}" \
   --tag "${scheduler_ref}" \
-  --file "${source_root}/build/scheduler/Dockerfile" \
+  --file "${scheduler_dockerfile}" \
   "${source_root}"
-docker run --rm --platform linux/amd64 \
-  "${scheduler_ref}" --version 2>&1 | grep -q "v0.35.4"
+test "$(docker run --rm --platform linux/amd64 \
+  --entrypoint /bin/kube-scheduler \
+  "${scheduler_ref}" --version 2>&1)" = "Kubernetes ${KUBERNETES_BINARY_VERSION}"
 scheduler_archive="${build_root}/outputs/images/kube-scheduler-linux-amd64.tar"
 skopeo copy \
   "docker-daemon:${scheduler_ref}" \
@@ -157,6 +177,7 @@ python3 - \
   "${SCHEDULER_PLUGINS_SOURCE_COMMIT}" \
   "${SCHEDULER_PLUGINS_SOURCE_TREE}" \
   "${SCHEDULER_PLUGINS_CHART_TREE}" \
+  "${KUBERNETES_BINARY_VERSION}" \
   "${scheduler_digest}" \
   "${HELM_VERSION}" \
   "${ADDON_PROFILE}" <<'PY'
@@ -167,7 +188,7 @@ from pathlib import Path
 document = {
     "schema_version": 1,
     "artifact": "jasper-k8s-scheduler-plugins-offline",
-    "profile": sys.argv[9],
+    "profile": sys.argv[10],
     "target": {"os": "linux", "architecture": "amd64"},
     "components": {
         "scheduler-plugins": {
@@ -178,9 +199,10 @@ document = {
             "chart_tree": sys.argv[6],
             "upstream_tag_signed": False,
             "image_origin": "built-from-source",
-            "image_manifest_digest": sys.argv[7],
+            "binary_version": sys.argv[7],
+            "image_manifest_digest": sys.argv[8],
         },
-        "helm": {"version": sys.argv[8]},
+        "helm": {"version": sys.argv[9]},
     },
 }
 Path(sys.argv[1]).write_text(

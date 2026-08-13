@@ -73,6 +73,7 @@ expected = {
             "chart_tree": "242e8ccc4e08aef0c120d2a2153420b5b1ccfe52",
             "upstream_tag_signed": False,
             "image_origin": "built-from-source",
+            "binary_version": "v1.35.4",
             "image_manifest_digest": digest,
         },
         "helm": {"version": "3.18.4"},
