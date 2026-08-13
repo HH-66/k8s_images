@@ -5,8 +5,8 @@ controllerManager:
   manager:
     priorityClassName: system-cluster-critical
     image:
-      repository: 10.144.66.139:35000/kueue/kueue-controller
-      tag: release-0.19@__KUEUE_IMAGE_AMD64_DIGEST__
+      repository: 10.144.66.139:35000/kueue/kueue
+      tag: v0.19.0@__KUEUE_IMAGE_AMD64_DIGEST__
       pullPolicy: IfNotPresent
     resources:
       requests:

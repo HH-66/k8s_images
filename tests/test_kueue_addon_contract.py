@@ -34,6 +34,9 @@ class KueueAddonContractTests(unittest.TestCase):
             "bf87087a393ffb3f9e696437d3527d35a9b9e13857169ff0eea3a1403c659857",
             values["KUEUE_CHART_SHA256"],
         )
+        self.assertEqual("registry.k8s.io/kueue/kueue", values["KUEUE_IMAGE"])
+        self.assertEqual("v0.19.0", values["KUEUE_IMAGE_TAG"])
+        self.assertEqual("h139-kueue-r2", values["ADDON_PROFILE"])
         self.assertRegex(values["KUEUE_IMAGE_AMD64_DIGEST"], r"^sha256:[0-9a-f]{64}$")
 
     def test_values_enable_only_the_available_job_integration(self) -> None:
@@ -84,7 +87,7 @@ class KueueAddonContractTests(unittest.TestCase):
                 text=True,
             ).stdout
         self.assertNotIn("registry.k8s.io", rendered)
-        self.assertIn("10.144.66.139:35000/kueue/kueue-controller", rendered)
+        self.assertIn("10.144.66.139:35000/kueue/kueue", rendered)
         self.assertNotIn("ray.io/rayjob", rendered)
 
     def test_artifact_is_scratch_and_contains_provenance(self) -> None:

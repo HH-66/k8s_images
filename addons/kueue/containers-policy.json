@@ -6,7 +6,7 @@
   ],
   "transports": {
     "docker": {
-      "registry.k8s.io/kueue/kueue-controller": [
+      "registry.k8s.io/kueue/kueue": [
         {
           "type": "insecureAcceptAnything"
         }

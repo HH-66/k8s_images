@@ -3,7 +3,7 @@ set -euo pipefail
 
 readonly root=${1:-outputs}
 readonly expected_chart_sha256=bf87087a393ffb3f9e696437d3527d35a9b9e13857169ff0eea3a1403c659857
-readonly expected_image='registry.k8s.io/kueue/kueue-controller:release-0.19@sha256:5df335c5e2db0c9e40f3f438aa905e5eb3cb552691707912224e8f9c31fc8f5f'
+readonly expected_image='registry.k8s.io/kueue/kueue:v0.19.0@sha256:edfc34283d8ab63835f8cbd30c7d0fdb6a4ca0f69689866806a2712362ef43e0'
 
 require_nonempty_file() {
   test -s "$1" || { echo "required file is missing or empty: $1" >&2; return 1; }
@@ -34,7 +34,7 @@ import sys
 import tarfile
 from pathlib import Path
 
-expected_digest = "sha256:5df335c5e2db0c9e40f3f438aa905e5eb3cb552691707912224e8f9c31fc8f5f"
+expected_digest = "sha256:edfc34283d8ab63835f8cbd30c7d0fdb6a4ca0f69689866806a2712362ef43e0"
 with tarfile.open(sys.argv[2], "r") as archive:
     index = json.load(archive.extractfile("index.json"))
 manifests = index.get("manifests", [])
@@ -42,8 +42,8 @@ if len(manifests) != 1 or manifests[0].get("digest") != expected_digest:
     raise SystemExit("Kueue OCI archive does not match the approved image digest")
 values = Path(sys.argv[3]).read_text(encoding="utf-8")
 expected_runtime = (
-    "10.144.66.139:35000/kueue/kueue-controller:"
-    f"release-0.19@{expected_digest}"
+    "10.144.66.139:35000/kueue/kueue:"
+    f"v0.19.0@{expected_digest}"
 )
 if expected_runtime not in values or "__KUEUE_IMAGE_AMD64_DIGEST__" in values:
     raise SystemExit("Kueue values do not pin the approved local image")
@@ -61,7 +61,7 @@ if "ray.io/rayjob" in values:
 expected = {
     "schema_version": 1,
     "artifact": "jasper-k8s-kueue-offline",
-    "profile": "h139-kueue-r1",
+    "profile": "h139-kueue-r2",
     "target": {"os": "linux", "architecture": "amd64"},
     "components": {
         "kueue": {
