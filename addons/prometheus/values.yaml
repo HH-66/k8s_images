@@ -1,0 +1,185 @@
+defaultRules:
+  create: true
+
+prometheusOperator:
+  priorityClassName: jasper-service-high
+  tls:
+    enabled: false
+  admissionWebhooks:
+    enabled: false
+    patch:
+      enabled: false
+  image:
+    registry: 10.144.66.139:35000
+    repository: prometheus-operator/prometheus-operator
+    tag: v0.93.0
+    sha: __PROMETHEUS_OPERATOR_IMAGE_AMD64_DIGEST_HEX__
+    pullPolicy: IfNotPresent
+  prometheusConfigReloader:
+    image:
+      registry: 10.144.66.139:35000
+      repository: prometheus-operator/prometheus-config-reloader
+      tag: v0.93.0
+      sha: __PROMETHEUS_CONFIG_RELOADER_IMAGE_AMD64_DIGEST_HEX__
+    resources:
+      requests:
+        cpu: 100m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 64Mi
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+prometheus:
+  prometheusSpec:
+    image:
+      registry: 10.144.66.139:35000
+      repository: prometheus/prometheus
+      tag: v3.13.2-distroless
+      sha: __PROMETHEUS_IMAGE_AMD64_DIGEST_HEX__
+    priorityClassName: jasper-service-high
+    replicas: 1
+    shards: 1
+    retention: 7d
+    retentionSize: 80GB
+    storageSpec:
+      emptyDir:
+        sizeLimit: 100Gi
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector:
+      matchLabels:
+        release: kube-prometheus-stack
+    serviceMonitorNamespaceSelector: {}
+    podMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelector:
+      matchLabels:
+        release: kube-prometheus-stack
+    podMonitorNamespaceSelector: {}
+    ruleSelectorNilUsesHelmValues: true
+    resources:
+      requests:
+        cpu: "2"
+        memory: 8Gi
+      limits:
+        cpu: "2"
+        memory: 8Gi
+  additionalServiceMonitors:
+    - name: nvidia-dcgm-exporter
+      additionalLabels:
+        jasper.ai/monitoring: enabled
+        release: kube-prometheus-stack
+      namespaceSelector:
+        matchNames: [gpu-operator]
+      selector:
+        matchLabels:
+          app: nvidia-dcgm-exporter
+      endpoints:
+        - port: gpu-metrics
+          path: /metrics
+          interval: 30s
+          scrapeTimeout: 10s
+  additionalPodMonitors:
+    - name: jasper-opt-in-pods
+      additionalLabels:
+        jasper.ai/monitoring: enabled
+        release: kube-prometheus-stack
+      namespaceSelector:
+        matchNames: [jasper-batch, jasper-services]
+      selector:
+        matchLabels:
+          metrics.jasper.ai/scrape: "true"
+      podMetricsEndpoints:
+        - port: metrics
+          path: /metrics
+          interval: 30s
+          scrapeTimeout: 10s
+
+alertmanager:
+  alertmanagerSpec:
+    image:
+      registry: 10.144.66.139:35000
+      repository: prometheus/alertmanager
+      tag: v0.33.1
+      sha: __ALERTMANAGER_IMAGE_AMD64_DIGEST_HEX__
+    priorityClassName: jasper-service-high
+    replicas: 1
+    retention: 168h
+    storage:
+      emptyDir:
+        sizeLimit: 1Gi
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+grafana:
+  priorityClassName: jasper-service-high
+  testFramework:
+    enabled: false
+  image:
+    registry: 10.144.66.139:35000
+    repository: grafana/grafana
+    tag: 13.1.3
+    sha: __GRAFANA_IMAGE_AMD64_DIGEST_HEX__
+  sidecar:
+    image:
+      registry: 10.144.66.139:35000
+      repository: kiwigrid/k8s-sidecar
+      tag: 2.10.1
+      sha: __GRAFANA_SIDECAR_IMAGE_AMD64_DIGEST_HEX__
+    resources:
+      requests:
+        cpu: 100m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 64Mi
+  persistence:
+    enabled: false
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+kube-state-metrics:
+  image:
+    registry: 10.144.66.139:35000
+    repository: kube-state-metrics/kube-state-metrics
+    tag: v2.19.1
+    sha: __KUBE_STATE_METRICS_IMAGE_AMD64_DIGEST__
+  priorityClassName: jasper-service-high
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+prometheus-node-exporter:
+  image:
+    registry: 10.144.66.139:35000
+    repository: prometheus/node-exporter
+    tag: v1.12.1
+    distroless: false
+    digest: __NODE_EXPORTER_IMAGE_AMD64_DIGEST__
+  priorityClassName: jasper-service-high
+  resources:
+    requests:
+      cpu: 200m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
