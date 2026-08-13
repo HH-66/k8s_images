@@ -57,7 +57,7 @@ class RancherAddonContractTests(unittest.TestCase):
         self.assertTrue(values["useBundledSystemChart"])
         self.assertFalse(values["postDelete"]["enabled"])
         self.assertEqual(
-            "v2.15.0@sha256:59d2643bdf3b76bfbc90410aff1f2b08765ac741d3d2349673381dcd685bf5f1",
+            "v2.15.0@sha256:8b1b2c65d5acd4abbd7709ac4589b0fed66e576f0e54278705b5754304c5a933",
             values["image"]["tag"],
         )
 

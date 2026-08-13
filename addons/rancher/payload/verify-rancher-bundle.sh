@@ -52,13 +52,13 @@ from pathlib import Path
 import yaml
 
 expected = {
-    "docker.io/rancher/rancher:v2.15.0": "sha256:59d2643bdf3b76bfbc90410aff1f2b08765ac741d3d2349673381dcd685bf5f1",
-    "docker.io/rancher/fleet:v0.16.0": "sha256:08685c8058c16ff5cca179cf1d86e72a16a875500fc8b638c31b2d4ba1f2f101",
-    "docker.io/rancher/fleet-agent:v0.16.0": "sha256:ec74409e6b155c7e1c878f1a929b839ab2d1d0cc585a38e989852af202dc2eb7",
-    "docker.io/rancher/rancher-webhook:v0.11.0": "sha256:1663d231bb2d323e423b2edea6377a674a92cc790c21f369c5ac1e6e4720a6f4",
-    "docker.io/rancher/remotedialer-proxy:v0.8.0": "sha256:6ea82ef79f8bd7639cde154941f5d93f11ddb58af923f6691de867f285af8cb6",
-    "docker.io/rancher/shell:v0.8.1": "sha256:f293af9c635f0646f07e918788b97450406e6d0de1041b8afa9ed263ecff76bf",
-    "docker.io/rancher/rancher-agent:v2.15.0": "sha256:d8d0d3d8868ffe96785bc291d7f9725bb74b5b1d2bb9647ec2fb00a179b2fb5c",
+    "docker.io/rancher/rancher:v2.15.0": "sha256:8b1b2c65d5acd4abbd7709ac4589b0fed66e576f0e54278705b5754304c5a933",
+    "docker.io/rancher/fleet:v0.16.0": "sha256:077b65408abd61a503a853fd30dd3896da8159b13bf146bcc2f11e6710171aec",
+    "docker.io/rancher/fleet-agent:v0.16.0": "sha256:af9d2889ae81f817082b8a941e6a1b6941ed354bf184a1d038dcb485cc2bca8e",
+    "docker.io/rancher/rancher-webhook:v0.11.0": "sha256:685ab68868a8782073afb622cfff11ef3134f39bfbda752000293cf8ca2571ad",
+    "docker.io/rancher/remotedialer-proxy:v0.8.0": "sha256:402423af0e0ae6d3f4b7e54db1bc055d23c7303917818d34876113b13516b35b",
+    "docker.io/rancher/shell:v0.8.1": "sha256:928944dedfdccdcbcb14227377427798747ca468212341c5706e8745203037b0",
+    "docker.io/rancher/rancher-agent:v2.15.0": "sha256:bc58d78aea17a2ca875e6dd2c071d3a9dd4a2fee24f659ad3dacc855905c9bfd",
 }
 lock = Path(sys.argv[2]).read_text(encoding="utf-8").splitlines()
 if lock != [f"{name}@{digest}" for name, digest in expected.items()]:
@@ -148,7 +148,7 @@ if pod_spec.get("priorityClassName") != "jasper-service-high":
 container = pod_spec["containers"][0]
 if container.get("image") != (
     "10.144.66.139:35000/rancher/rancher:v2.15.0@"
-    "sha256:59d2643bdf3b76bfbc90410aff1f2b08765ac741d3d2349673381dcd685bf5f1"
+    "sha256:8b1b2c65d5acd4abbd7709ac4589b0fed66e576f0e54278705b5754304c5a933"
 ):
     raise SystemExit("Rancher render does not use the local registry")
 if "--no-cacerts" in container.get("args", []):
