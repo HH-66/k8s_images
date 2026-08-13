@@ -78,6 +78,9 @@ class PrometheusAddonContractTests(unittest.TestCase):
         self.assertEqual(8, content.count("copy_image \"${"))
         self.assertIn("--preserve-digests", content)
         self.assertIn("verify-prometheus-bundle.sh", content)
+        verifier_content = verifier.read_text(encoding="utf-8")
+        self.assertIn("text = result.stdout", verifier_content)
+        self.assertNotIn("rendered.read_text", verifier_content)
 
     def test_frozen_chart_renders_only_local_digest_images(self) -> None:
         chart = Path("/tmp/kube-prometheus-stack-88.2.0.tgz")

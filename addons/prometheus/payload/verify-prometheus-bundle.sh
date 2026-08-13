@@ -46,7 +46,6 @@ import json
 import subprocess
 import sys
 import tarfile
-import tempfile
 import re
 from pathlib import Path
 
@@ -89,19 +88,16 @@ if stack != {
 }:
     raise SystemExit("unexpected kube-prometheus-stack provenance")
 
-with tempfile.TemporaryDirectory() as directory:
-    rendered = Path(directory) / "rendered.yaml"
-    result = subprocess.run(
-        [
-            sys.argv[5], "template", "kube-prometheus-stack", sys.argv[4],
-            "--namespace", "monitoring", "--values", sys.argv[3],
-        ],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    rendered.write_text(result.stdout, encoding="utf-8")
-text = rendered.read_text(encoding="utf-8")
+result = subprocess.run(
+    [
+        sys.argv[5], "template", "kube-prometheus-stack", sys.argv[4],
+        "--namespace", "monitoring", "--values", sys.argv[3],
+    ],
+    check=True,
+    capture_output=True,
+    text=True,
+)
+text = result.stdout
 images = re.findall(r'^\s*image:\s*["\']?([^"\'\s]+)', text, re.MULTILINE)
 if not images:
     raise SystemExit("rendered Prometheus chart has no images")
