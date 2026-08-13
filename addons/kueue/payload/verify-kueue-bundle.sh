@@ -41,11 +41,13 @@ manifests = index.get("manifests", [])
 if len(manifests) != 1 or manifests[0].get("digest") != expected_digest:
     raise SystemExit("Kueue OCI archive does not match the approved image digest")
 values = Path(sys.argv[3]).read_text(encoding="utf-8")
-expected_runtime = (
-    "10.144.66.139:35000/kueue/kueue:"
-    f"v0.19.0@{expected_digest}"
-)
-if expected_runtime not in values or "__KUEUE_IMAGE_AMD64_DIGEST__" in values:
+expected_repository = "repository: 10.144.66.139:35000/kueue/kueue"
+expected_tag = f"tag: v0.19.0@{expected_digest}"
+if (
+    expected_repository not in values
+    or expected_tag not in values
+    or "__KUEUE_IMAGE_AMD64_DIGEST__" in values
+):
     raise SystemExit("Kueue values do not pin the approved local image")
 for required in (
     "priorityClassName: system-cluster-critical",
@@ -61,7 +63,7 @@ if "ray.io/rayjob" in values:
 expected = {
     "schema_version": 1,
     "artifact": "jasper-k8s-kueue-offline",
-    "profile": "h139-kueue-r2",
+    "profile": "h139-kueue-r3",
     "target": {"os": "linux", "architecture": "amd64"},
     "components": {
         "kueue": {

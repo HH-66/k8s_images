@@ -36,7 +36,7 @@ class KueueAddonContractTests(unittest.TestCase):
         )
         self.assertEqual("registry.k8s.io/kueue/kueue", values["KUEUE_IMAGE"])
         self.assertEqual("v0.19.0", values["KUEUE_IMAGE_TAG"])
-        self.assertEqual("h139-kueue-r2", values["ADDON_PROFILE"])
+        self.assertEqual("h139-kueue-r3", values["ADDON_PROFILE"])
         self.assertRegex(values["KUEUE_IMAGE_AMD64_DIGEST"], r"^sha256:[0-9a-f]{64}$")
 
     def test_values_enable_only_the_available_job_integration(self) -> None:
@@ -97,6 +97,8 @@ class KueueAddonContractTests(unittest.TestCase):
         verifier = (ADDON / "payload/verify-kueue-bundle.sh").read_text(
             encoding="utf-8"
         )
+        self.assertIn("expected_repository", verifier)
+        self.assertIn("expected_tag", verifier)
         self.assertIn("upstream_tag_signed", verifier)
         self.assertIn("ray.io/rayjob", verifier)
         self.assertIn("sha256sum --check --strict SHA256SUMS", verifier)
